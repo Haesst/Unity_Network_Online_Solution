@@ -16,6 +16,7 @@ public class ClientHandleData
         //Add server packets here
         packetListener.Add((int)ServerPackages.SPingClient, HandlePingFromServer);
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
+        packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
     }
 
     public static void HandleData(byte[] data)
@@ -126,5 +127,18 @@ public class ClientHandleData
         buffer.Dispose();
 
         ChatText.instance.RecieveChatMessage(message, connectionID);
+    }
+
+    private static void HandleRequestConnectionID(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+        buffer.Dispose();
+
+        // assign the connectionID to the PlayerInput class
+        PlayerInput.instance.connectionID = connectionID;
     }
 }

@@ -88,4 +88,13 @@ public class ClientTCP
         buffer.Dispose();
     }
 
+    public static void PACKAGE_RequestConnectionID()
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.CRequestConnectionID);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
+
 }

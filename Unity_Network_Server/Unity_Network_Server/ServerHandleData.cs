@@ -15,6 +15,7 @@ namespace Unity_Network_Server
             //Add client packets here
             packetListener.Add((int)ClientPackages.CPingServer, HandlePingFromClient);
             packetListener.Add((int)ClientPackages.CReceiveMessageFromClient, HandleChatMessageFromClient);
+            packetListener.Add((int)ClientPackages.CRequestConnectionID, HandleRequestConnectionID);
         }
 
         public static void HandleData(int connectionID, byte[] data)
@@ -127,6 +128,17 @@ namespace Unity_Network_Server
 
             // Call the function that broadcasts the message
             ServerTCP.PACKET_ChatmessageToClient(connectionID, message);
+        }
+
+        private static void HandleRequestConnectionID(int connectionID, byte[] data)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteBytes(data);
+            int packageID = buffer.ReadInteger();
+
+            buffer.Dispose();
+
+            ServerTCP.PACKET_SendConnectionID(connectionID);
         }
     }
 }

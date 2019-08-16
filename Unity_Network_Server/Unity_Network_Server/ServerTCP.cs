@@ -10,6 +10,7 @@ namespace Unity_Network_Server
     {
         private static TcpListener serverSocket;
         public static ClientObject[] clientObjects;
+        public static Player[] players;
 
         public static void InitializeServer()
         {
@@ -44,9 +45,11 @@ namespace Unity_Network_Server
         private static void InitializeClientObject()
         {
             clientObjects = new ClientObject[Constants.MAX_PLAYERS];
+            players = new Player[Constants.MAX_PLAYERS];
             for (int i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 clientObjects[i] = new ClientObject(null, 0);
+                players[i] = new Player();
             }
         }
 
@@ -146,6 +149,17 @@ namespace Unity_Network_Server
             // Send it to all but connectionID
             SendDataToAllBut(connectionID, buffer.ToArray());
             // Dispose the buffer
+            buffer.Dispose();
+        }
+
+        public static void PACKET_SendConnectionID(int connectionID)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendConnectionID);
+
+            buffer.WriteInteger(connectionID);
+
+            SendDataTo(connectionID, buffer.ToArray());
             buffer.Dispose();
         }
 

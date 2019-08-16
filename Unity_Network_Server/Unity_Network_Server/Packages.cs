@@ -3,11 +3,12 @@ public enum ServerPackages
 {
     SPingClient = 1,
     SSendChatMessageClient,
+    SSendConnectionID,
 }
 
 public enum ClientPackages
 {
     CPingServer = 1,
     CReceiveMessageFromClient,
-    CBroadcastMessageToServer,
+    CRequestConnectionID,
 }
