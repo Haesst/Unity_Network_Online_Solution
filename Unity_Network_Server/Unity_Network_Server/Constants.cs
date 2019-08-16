@@ -4,6 +4,5 @@
     {
         public const bool DEBUG_PACKETS = true;
         public const int MAX_PLAYERS = 1000;
-        //SpaceShooter
     }
 }
