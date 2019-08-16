@@ -140,5 +140,6 @@ public class ClientHandleData
 
         // assign the connectionID to the PlayerInput class
         PlayerInput.instance.connectionID = connectionID;
+        NetPlayer.SetConnectionID(connectionID);
     }
 }
