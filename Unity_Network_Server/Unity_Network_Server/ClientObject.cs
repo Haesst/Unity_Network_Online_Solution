@@ -62,7 +62,7 @@ namespace Unity_Network_Server
         private void CloseConnection()
         {
             isConnected = false;
-            Console.WriteLine(String.Format("User disconnected : {0} | connectionID: {1}", socket.Client.RemoteEndPoint.ToString(), connectionID));
+            Console.WriteLine($"User disconnected : {socket.Client.RemoteEndPoint.ToString()} | connectionID: {connectionID}");
             socket.Close();
             socket = null;
         }
