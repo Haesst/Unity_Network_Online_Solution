@@ -9,4 +9,5 @@ public enum ClientPackages
 {
     CPingServer = 1,
     CReciveChatMessageFromClient,
+    CBroadcastMessageToServer,
 }
