@@ -14,8 +14,7 @@ namespace Unity_Network_Server
             packetListener = new Dictionary<int, Packet_>();
             //Add client packets here
             packetListener.Add((int)ClientPackages.CPingServer, HandlePingFromClient);
-            packetListener.Add((int)ClientPackages.CReciveChatMessageFromClient, HandleChatMessageFromClient);
-            packetListener.Add((int)ClientPackages.CBroadcastMessageToServer, HandleChatMessageFromClient2);
+            packetListener.Add((int)ClientPackages.CReceiveMessageFromClient, HandleChatMessageFromClient);
         }
 
         public static void HandleData(int connectionID, byte[] data)
@@ -110,29 +109,6 @@ namespace Unity_Network_Server
         private static void HandleChatMessageFromClient(int connectionID, byte[] data)
         {
             Console.WriteLine("HandleChatMessageFromClient");
-            // Create a new buffer
-            ByteBuffer buffer = new ByteBuffer();
-            // Read data from package
-            buffer.WriteBytes(data);
-
-            // First slot should always be ID
-            int packageID = buffer.ReadInteger();
-            // Second slot should be the message
-            string message = buffer.ReadString();
-
-            // Dispose the buffer
-            buffer.Dispose();
-
-            // Write out a line in the console
-            Console.WriteLine($"Recieved message from id: {connectionID}, message: {message}");
-
-            // Call the function that broadcasts the message
-            ServerTCP.PACKET_ChatmessageToClient(connectionID, message);
-        }
-
-        private static void HandleChatMessageFromClient2(int connectionID, byte[] data)
-        {
-            Console.WriteLine("HandleChatMessageFromClient2");
             // Create a new buffer
             ByteBuffer buffer = new ByteBuffer();
             // Read data from package

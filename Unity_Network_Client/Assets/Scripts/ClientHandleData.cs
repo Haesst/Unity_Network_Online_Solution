@@ -108,7 +108,7 @@ public class ClientHandleData
             NetworkManager.instance.isConnected = true;
         }
         
-        Debug.Log("You got a ping from the server, client is sending a ping back to the server.");
+        //Debug.Log("You got a ping from the server, client is sending a ping back to the server.");
         ClientTCP.PACKAGE_PingToServer();
 
     }
