@@ -15,7 +15,7 @@ public class ClientHandleData
         packetListener = new Dictionary<int, Packet_>();
         //Add server packets here
         packetListener.Add((int)ServerPackages.SPingClient, HandlePingFromServer);
-        packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandlePingFromServer);
+        packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
     }
 
     public static void HandleData(byte[] data)
@@ -119,12 +119,12 @@ public class ClientHandleData
         buffer.WriteBytes(data);
         int packageID = buffer.ReadInteger();
 
-        //int connectionID = buffer.ReadInteger();
+        int connectionID = buffer.ReadInteger();
 
         string message = buffer.ReadString();
 
         buffer.Dispose();
 
-        ChatText.instance.RecieveChatMessage(message);
+        ChatText.instance.RecieveChatMessage(message, connectionID);
     }
 }

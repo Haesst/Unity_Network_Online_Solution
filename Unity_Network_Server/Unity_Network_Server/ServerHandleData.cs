@@ -103,7 +103,7 @@ namespace Unity_Network_Server
 
             buffer.Dispose();
 
-            Console.WriteLine(String.Format("connectionID '{0}' did send a ping, lets send a ping back!", connectionID));
+            //Console.WriteLine(String.Format("connectionID '{0}' did send a ping, lets send a ping back!", connectionID));
             ServerTCP.PACKET_PingToClient(connectionID);
         }
 
