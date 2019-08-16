@@ -17,5 +17,6 @@ public class ChatInput : MonoBehaviour
         string message = inputField.text;
         inputField.text = "";
         chatText.RecieveChatMessage(message);
+        ClientTCP.PACKAGE_BroadcastMsg(message);
     }
 }

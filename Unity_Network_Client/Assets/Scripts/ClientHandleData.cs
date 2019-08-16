@@ -119,8 +119,12 @@ public class ClientHandleData
         buffer.WriteBytes(data);
         int packageID = buffer.ReadInteger();
 
+        //int connectionID = buffer.ReadInteger();
+
         string message = buffer.ReadString();
 
         buffer.Dispose();
+
+        ChatText.instance.RecieveChatMessage(message);
     }
 }

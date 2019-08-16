@@ -77,4 +77,15 @@ public class ClientTCP
         buffer.Dispose();
     }
 
+    public static void PACKAGE_BroadcastMsg(string msg)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.CBroadcastMessageToServer);
+
+        buffer.WriteString(msg);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
+
 }
