@@ -14,7 +14,7 @@ public class NetworkManager : MonoBehaviour {
     private void Awake()
     {
         instance = this;
-        host = "localhost";
+        host = "10.20.2.104";
         port = 7171;
         isConnected = false;
         DontDestroyOnLoad(this);

@@ -15,6 +15,7 @@ public class ClientHandleData
         packetListener = new Dictionary<int, Packet_>();
         //Add server packets here
         packetListener.Add((int)ServerPackages.SPingClient, HandlePingFromServer);
+        packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandlePingFromServer);
     }
 
     public static void HandleData(byte[] data)
@@ -110,5 +111,16 @@ public class ClientHandleData
         Debug.Log("You got a ping from the server, client is sending a ping back to the server.");
         ClientTCP.PACKAGE_PingToServer();
 
+    }
+
+    private static void HandleChatMsgFromServer(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        string message = buffer.ReadString();
+
+        buffer.Dispose();
     }
 }
