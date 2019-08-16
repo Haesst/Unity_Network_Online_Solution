@@ -131,5 +131,21 @@ namespace Unity_Network_Server
             buffer.Dispose();
         }
 
+        public static void PACKET_ChatmessageToClient(int connectionID, string message)
+        {
+            // Create a new buffer
+            ByteBuffer buffer = new ByteBuffer();
+
+            // Write the Package ID
+            buffer.WriteInteger((int)ServerPackages.SSendChatMessageClient);
+            // Write the message
+            buffer.WriteString(message);
+
+            // Send it to all but connectionID
+            SendDataToAllBut(connectionID, buffer.ToArray());
+            // Dispose the buffer
+            buffer.Dispose();
+        }
+
     }
 }
