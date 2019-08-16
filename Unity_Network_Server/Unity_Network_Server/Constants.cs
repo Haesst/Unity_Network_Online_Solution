@@ -2,7 +2,7 @@
 {
     class Constants
     {
-        public const bool DEBUG_PACKETS = false;
+        public const bool DEBUG_PACKETS = true;
         public const int MAX_PLAYERS = 1000;
     }
 }
