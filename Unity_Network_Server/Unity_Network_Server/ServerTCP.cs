@@ -138,6 +138,8 @@ namespace Unity_Network_Server
 
             // Write the Package ID
             buffer.WriteInteger((int)ServerPackages.SSendChatMessageClient);
+            // Write the connectionID
+            buffer.WriteInteger(connectionID);
             // Write the message
             buffer.WriteString(message);
 
