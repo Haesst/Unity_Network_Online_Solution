@@ -167,7 +167,7 @@ namespace Unity_Network_Server
         public static void PACKET_SendPlayerMovement(int connectionID, float posX, float posY, float rotation)
         {
             ByteBuffer buffer = new ByteBuffer();
-            buffer.WriteInteger((int)ServerPackages.SSendConnectionID);
+            buffer.WriteInteger((int)ServerPackages.SSendPlayerMovement);
 
             buffer.WriteInteger(connectionID);
 

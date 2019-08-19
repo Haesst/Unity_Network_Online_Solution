@@ -18,7 +18,14 @@ public class PlayerInput : MonoBehaviour
     private void LateUpdate()
     {
         // Make sure to only be able to move your own spaceship
-        if (connectionID == NetPlayer.connectionID) { PlayerMovement(); }
+        if (connectionID == NetPlayer.connectionID)
+        {
+            if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+            {
+                PlayerMovement();
+            }
+            
+        }
     }
 
     private void PlayerMovement()
