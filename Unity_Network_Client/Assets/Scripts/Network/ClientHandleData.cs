@@ -138,10 +138,16 @@ public class ClientHandleData
         int connectionID = buffer.ReadInteger();
         buffer.Dispose();
 
+        Debug.Log("HandleRequestConnectionID");
+        NetPlayer.instance.InstantiateNewPlayer();
+
+
         // assign the connectionID to the PlayerInput class
         PlayerInput.instance.connectionID = connectionID;
+
         //Change the gameObjects name in unity's hierarchy
         PlayerInput.instance.gameObject.name = $"Player | {connectionID}";
         NetPlayer.SetConnectionID(connectionID);
+        
     }
 }

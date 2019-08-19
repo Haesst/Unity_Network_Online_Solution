@@ -17,13 +17,8 @@ public class PlayerInput : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // If there is no connectionID set request a connectionID from the server
-        if (connectionID <= 0) { ClientTCP.PACKAGE_RequestConnectionID(); }
-
         // Make sure to only be able to move your own spaceship
         if (connectionID == NetPlayer.connectionID) { PlayerMovement(); }
-        
-
     }
 
     private void PlayerMovement()
