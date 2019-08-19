@@ -17,6 +17,7 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SPingClient, HandlePingFromServer);
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
+        packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
     }
 
     public static void HandleData(byte[] data)
@@ -138,9 +139,7 @@ public class ClientHandleData
         int connectionID = buffer.ReadInteger();
         buffer.Dispose();
 
-        Debug.Log("HandleRequestConnectionID");
-        NetPlayer.instance.InstantiateNewPlayer();
-
+        NetPlayer.instance.InstantiateNewPlayer(connectionID);
 
         // assign the connectionID to the PlayerInput class
         PlayerInput.instance.connectionID = connectionID;
@@ -149,5 +148,24 @@ public class ClientHandleData
         PlayerInput.instance.gameObject.name = $"Player | {connectionID}";
         NetPlayer.SetConnectionID(connectionID);
         
+    }
+
+    private static void HandlePlayerMovement(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+        float posX = buffer.ReadFloat();
+        float posY = buffer.ReadFloat();
+        float rotation = buffer.ReadFloat();
+
+        buffer.Dispose();
+
+        //Note: change z value!!!
+        NetPlayer.Players[connectionID].transform.position = new Vector3(posX, posY, 0);
+        NetPlayer.Players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
+
     }
 }

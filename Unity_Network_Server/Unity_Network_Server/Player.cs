@@ -6,13 +6,24 @@ using System.Threading.Tasks;
 
 namespace Unity_Network_Server
 {
-    class Player
+    public class Player
     {
         //TODO: Store all players info here
         int health;
-        float posX;
-        float posY;
-        float posZ;
+        private float posX;
+        private float posY;
+        private float rotation;
 
+        public float PosX { get => posX; }
+        public float PosY { get => posY; }
+        public float Rotation { get => rotation; }
+
+        public void SetPlayerPosition(float posX, float posY, float rotation)
+        {
+            this.posX = posX;
+            this.posY = posY;
+            this.rotation = rotation;
+        }
     }
+
 }

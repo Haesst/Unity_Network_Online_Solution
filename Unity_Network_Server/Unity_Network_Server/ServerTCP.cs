@@ -160,6 +160,22 @@ namespace Unity_Network_Server
             buffer.WriteInteger(connectionID);
 
             SendDataTo(connectionID, buffer.ToArray());
+            SendDataToAllBut(connectionID, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public static void PACKET_SendPlayerMovement(int connectionID, float posX, float posY, float rotation)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendConnectionID);
+
+            buffer.WriteInteger(connectionID);
+
+            buffer.WriteFloat(posX);
+            buffer.WriteFloat(posY);
+            buffer.WriteFloat(rotation);
+
+            SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
         }
 

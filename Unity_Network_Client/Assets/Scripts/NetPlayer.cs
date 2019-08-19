@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class NetPlayer : MonoBehaviour
 {
@@ -7,6 +8,8 @@ public class NetPlayer : MonoBehaviour
     public static Vector3 position { get; protected set; }
     [SerializeField] private Sprite[] sprites;
     static SpriteRenderer g_ship;
+
+    public static Dictionary<int, GameObject> Players = new Dictionary<int, GameObject>();
 
     private void Awake()
     {
@@ -30,9 +33,10 @@ public class NetPlayer : MonoBehaviour
 
     }
 
-    public void InstantiateNewPlayer()
+    public void InstantiateNewPlayer(int connectionID)
     {
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        Players.Add(connectionID, go);
     }
 
 }

@@ -16,6 +16,7 @@ namespace Unity_Network_Server
             packetListener.Add((int)ClientPackages.CPingServer, HandlePingFromClient);
             packetListener.Add((int)ClientPackages.CReceiveMessageFromClient, HandleChatMessageFromClient);
             packetListener.Add((int)ClientPackages.CRequestConnectionID, HandleRequestConnectionID);
+            packetListener.Add((int)ClientPackages.CSendMovement, HandleClientMovement);
         }
 
         public static void HandleData(int connectionID, byte[] data)
@@ -139,6 +140,25 @@ namespace Unity_Network_Server
             buffer.Dispose();
 
             ServerTCP.PACKET_SendConnectionID(connectionID);
+        }
+
+        private static void HandleClientMovement(int connectionID, byte[] data)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteBytes(data);
+            int packageID = buffer.ReadInteger();
+
+            float x = buffer.ReadFloat();
+            float y = buffer.ReadFloat();
+            float rotation = buffer.ReadFloat();
+
+            buffer.Dispose();
+
+            // Set player position on server side 
+            ServerTCP.players[connectionID].SetPlayerPosition(x, y, rotation);
+
+            // Send player position to all clients
+            ServerTCP.PACKET_SendPlayerMovement(connectionID, ServerTCP.players[connectionID].PosX, ServerTCP.players[connectionID].PosY, ServerTCP.players[connectionID].Rotation);
         }
     }
 }

@@ -97,4 +97,17 @@ public class ClientTCP
         buffer.Dispose();
     }
 
+    public static void PACKAGE_SendMovement(float posX, float posY, float rotation)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.CSendMovement);
+
+        buffer.WriteFloat(posX);
+        buffer.WriteFloat(posY);
+        buffer.WriteFloat(rotation);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
+
 }

@@ -15,7 +15,7 @@ public class PlayerInput : MonoBehaviour
         rb = GetComponent<Rigidbody>();
     }
 
-    private void FixedUpdate()
+    private void LateUpdate()
     {
         // Make sure to only be able to move your own spaceship
         if (connectionID == NetPlayer.connectionID) { PlayerMovement(); }
@@ -28,6 +28,8 @@ public class PlayerInput : MonoBehaviour
 
         transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
+
+        ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.z);
     }
 }
 
