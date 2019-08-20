@@ -20,7 +20,7 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
         packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
-        packetListener.Add((int)ServerPackages.SSendOnlinePlayers, HandleOnlinePlayers);
+        packetListener.Add((int)ServerPackages.SSendOnlinePlayer, HandleOnlinePlayer);
     }
 
     public static void HandleData(byte[] data)
@@ -172,29 +172,19 @@ public class ClientHandleData
 
     }
 
-    private static void HandleOnlinePlayers(byte[] data)
+    private static void HandleOnlinePlayer(byte[] data)
     {
         ByteBuffer buffer = new ByteBuffer();
         buffer.WriteBytes(data);
         int packageID = buffer.ReadInteger();
 
-        int arrayLength = buffer.ReadInteger();
-        byte[] tempPlayers = buffer.ReadBytes(arrayLength);
+        int playerID = buffer.ReadInteger();
+        float playerPosX = buffer.ReadFloat();
+        float playerPosY = buffer.ReadFloat();
+        float playerRotation = buffer.ReadFloat();
 
         buffer.Dispose();
 
-        var mStream = new MemoryStream();
-        var bf = new BinaryFormatter();
-
-        mStream.Write(tempPlayers, 0, tempPlayers.Length);
-        mStream.Position = 0;
-
-        List<Player> players = bf.Deserialize(mStream) as List<Player>;
-
-        foreach (var item in players)
-        {
-            Debug.Log(item.connectionID);
-        }
-
+        NetPlayer.instance.InstantiateNewPlayer(playerID, playerPosX, playerPosY, playerRotation);
     }
 }

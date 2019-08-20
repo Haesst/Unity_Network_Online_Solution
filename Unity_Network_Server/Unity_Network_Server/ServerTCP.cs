@@ -164,7 +164,14 @@ namespace Unity_Network_Server
             SendDataTo(connectionID, buffer.ToArray());
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
-            PACKET_SendOnlinePlayers(connectionID);
+            for (int i = 1; i < ServerTCP.players.Length; i++)
+            {
+                if (ServerTCP.players[i] != null && i != connectionID)
+                {
+                    PACKET_SendOnlinePlayer(connectionID, i);
+                }
+            }
+            
         }
 
         public static void PACKET_SendPlayerMovement(int connectionID, float posX, float posY, float rotation)
@@ -181,7 +188,21 @@ namespace Unity_Network_Server
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
         }
+        public static void PACKET_SendOnlinePlayer(int connectionID, int playerID)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendOnlinePlayer);
 
+            buffer.WriteInteger(playerID);
+            buffer.WriteFloat(players[playerID].PosX);
+            buffer.WriteFloat(players[playerID].PosY);
+            buffer.WriteFloat(players[playerID].Rotation);
+
+            SendDataTo(connectionID, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        /*
         public static void PACKET_SendOnlinePlayers(int connectionID)
         {
             ByteBuffer buffer = new ByteBuffer();
@@ -205,7 +226,7 @@ namespace Unity_Network_Server
 
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
-        }
+        }*/
 
     }
 }

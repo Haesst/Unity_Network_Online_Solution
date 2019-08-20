@@ -39,4 +39,12 @@ public class NetPlayer : MonoBehaviour
         Players.Add(connectionID, go);
     }
 
+    public void InstantiateNewPlayer(int connectionID, float posX, float posY, float rotation)
+    {
+        GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        go.transform.position = new Vector3(posX, posY, go.transform.position.z);
+        go.transform.rotation = Quaternion.Euler(0, 0, rotation);
+        Players.Add(connectionID, go);
+    }
+
 }

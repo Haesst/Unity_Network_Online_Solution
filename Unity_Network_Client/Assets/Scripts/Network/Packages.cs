@@ -5,7 +5,7 @@ public enum ServerPackages
     SSendChatMessageClient,
     SSendConnectionID,
     SSendPlayerMovement,
-    SSendOnlinePlayers
+    SSendOnlinePlayer
 }
 
 public enum ClientPackages
