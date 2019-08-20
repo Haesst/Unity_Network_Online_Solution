@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace Unity_Network_Server
@@ -162,6 +164,7 @@ namespace Unity_Network_Server
             SendDataTo(connectionID, buffer.ToArray());
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
+            PACKET_SendOnlinePlayers(connectionID);
         }
 
         public static void PACKET_SendPlayerMovement(int connectionID, float posX, float posY, float rotation)
@@ -174,6 +177,31 @@ namespace Unity_Network_Server
             buffer.WriteFloat(posX);
             buffer.WriteFloat(posY);
             buffer.WriteFloat(rotation);
+
+            SendDataToAllBut(connectionID, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public static void PACKET_SendOnlinePlayers(int connectionID)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendOnlinePlayers);
+            List<Player> tempPlayers = new List<Player>();
+
+            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
+            {
+                if (players[i] != null && i != connectionID)
+                {
+                    tempPlayers.Add(players[i]);
+                }
+            }
+
+            var bf = new BinaryFormatter();
+            var mStream = new MemoryStream();
+            bf.Serialize(mStream, tempPlayers);
+
+            buffer.WriteInteger(mStream.ToArray().Length);
+            buffer.WriteBytes(mStream.ToArray());
 
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();

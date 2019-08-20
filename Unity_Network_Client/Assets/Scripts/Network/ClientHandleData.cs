@@ -1,5 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 
 public class ClientHandleData
@@ -18,6 +20,7 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
         packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
+        packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandleOnlinePlayers);
     }
 
     public static void HandleData(byte[] data)
@@ -166,6 +169,32 @@ public class ClientHandleData
         //Note: change z value!!!
         NetPlayer.Players[connectionID].transform.position = new Vector3(posX, posY, 0);
         NetPlayer.Players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
+
+    }
+
+    private static void HandleOnlinePlayers(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int arrayLength = buffer.ReadInteger();
+        byte[] tempPlayers = buffer.ReadBytes(arrayLength);
+
+        buffer.Dispose();
+
+        var mStream = new MemoryStream();
+        var bf = new BinaryFormatter();
+
+        mStream.Write(tempPlayers, 0, tempPlayers.Length);
+        mStream.Position = 0;
+
+        List<Player> players = bf.Deserialize(mStream) as List<Player>;
+
+        foreach (var item in players)
+        {
+            Debug.Log(item.connectionID);
+        }
 
     }
 }

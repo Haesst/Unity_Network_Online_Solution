@@ -4,7 +4,8 @@ public enum ServerPackages
     SPingClient = 1,
     SSendChatMessageClient,
     SSendConnectionID,
-    SSendPlayerMovement
+    SSendPlayerMovement,
+    SSendOnlinePlayers
 }
 
 public enum ClientPackages

@@ -9,6 +9,7 @@ namespace Unity_Network_Server
     public class Player
     {
         //TODO: Store all players info here
+        int connectionID;
         int health;
         private float posX;
         private float posY;
