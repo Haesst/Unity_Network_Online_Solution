@@ -51,7 +51,7 @@ namespace Unity_Network_Server
             for (int i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 clientObjects[i] = new ClientObject(null, 0);
-                players[i] = new Player();
+                players[i] = new Player(0);
             }
         }
 
@@ -166,7 +166,7 @@ namespace Unity_Network_Server
             buffer.Dispose();
             for (int i = 1; i < ServerTCP.players.Length; i++)
             {
-                if (ServerTCP.players[i] != null && i != connectionID)
+                if (ServerTCP.players[i].ConnectionID > 0 && i != connectionID)
                 {
                     PACKET_SendOnlinePlayer(connectionID, i);
                 }
@@ -197,7 +197,6 @@ namespace Unity_Network_Server
             buffer.WriteFloat(players[playerID].PosX);
             buffer.WriteFloat(players[playerID].PosY);
             buffer.WriteFloat(players[playerID].Rotation);
-
             SendDataTo(connectionID, buffer.ToArray());
             buffer.Dispose();
         }

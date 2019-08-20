@@ -35,6 +35,8 @@ public class NetPlayer : MonoBehaviour
 
     public void InstantiateNewPlayer(int connectionID)
     {
+        if (connectionID <= 0) { return; }
+
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
         Players.Add(connectionID, go);
     }
@@ -44,6 +46,8 @@ public class NetPlayer : MonoBehaviour
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
         go.transform.position = new Vector3(posX, posY, go.transform.position.z);
         go.transform.rotation = Quaternion.Euler(0, 0, rotation);
+        go.GetComponent<Player>().ConnectionID = connectionID;
+        go.name = $"Player | {connectionID}";
         Players.Add(connectionID, go);
     }
 

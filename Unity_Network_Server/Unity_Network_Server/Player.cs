@@ -15,9 +15,14 @@ namespace Unity_Network_Server
         private float posY;
         private float rotation;
 
+        public Player(int connectionID)
+        {
+            this.ConnectionID = connectionID;
+        }
         public float PosX { get => posX; }
         public float PosY { get => posY; }
         public float Rotation { get => rotation; }
+        public int ConnectionID { get => connectionID; set => connectionID = value; }
 
         public void SetPlayerPosition(float posX, float posY, float rotation)
         {

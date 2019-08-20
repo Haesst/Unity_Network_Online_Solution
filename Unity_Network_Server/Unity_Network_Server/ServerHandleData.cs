@@ -138,7 +138,7 @@ namespace Unity_Network_Server
             int packageID = buffer.ReadInteger();
 
             buffer.Dispose();
-
+            ServerTCP.players[connectionID].ConnectionID = connectionID;
             ServerTCP.PACKET_SendConnectionID(connectionID);
         }
 
