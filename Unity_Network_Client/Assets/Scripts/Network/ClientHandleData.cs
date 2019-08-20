@@ -142,17 +142,15 @@ public class ClientHandleData
         int connectionID = buffer.ReadInteger();
         buffer.Dispose();
 
-        
+        NetPlayer.instance.InstantiateNewPlayer(connectionID);
 
         // assign the connectionID to the PlayerInput class
-       
-        NetPlayer.SetConnectionID(connectionID);
-
-        NetPlayer.instance.InstantiateNewPlayer(connectionID);
         PlayerInput.instance.connectionID = connectionID;
+
         //Change the gameObjects name in unity's hierarchy
         PlayerInput.instance.gameObject.name = $"Player | {connectionID}";
-
+        NetPlayer.SetConnectionID(connectionID);
+        
     }
 
     private static void HandlePlayerMovement(byte[] data)
