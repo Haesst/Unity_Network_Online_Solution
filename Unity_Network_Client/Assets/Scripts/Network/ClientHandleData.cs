@@ -20,7 +20,7 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
         packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
-        packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandleOnlinePlayers);
+        packetListener.Add((int)ServerPackages.SSendOnlinePlayers, HandleOnlinePlayers);
     }
 
     public static void HandleData(byte[] data)
