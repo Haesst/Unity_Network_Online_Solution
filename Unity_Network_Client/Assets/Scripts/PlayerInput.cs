@@ -36,7 +36,7 @@ public class PlayerInput : MonoBehaviour
         transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
 
-        ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.z);
+        ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
     }
 }
 
