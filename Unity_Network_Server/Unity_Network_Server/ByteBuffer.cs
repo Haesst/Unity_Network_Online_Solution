@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameServer
+namespace Unity_Network_Server
 {
     internal class ByteBuffer
     {
