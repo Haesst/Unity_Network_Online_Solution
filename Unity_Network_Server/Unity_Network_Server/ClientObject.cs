@@ -62,11 +62,10 @@ namespace Unity_Network_Server
         private void CloseConnection()
         {
             isConnected = false;
-            ServerTCP.PACKET_SendRemovePlayer(connectionID);
             Console.WriteLine($"User disconnected : {socket.Client.RemoteEndPoint.ToString()} | connectionID: {connectionID}");
             socket.Close();
             socket = null;
-            ServerTCP.players[connectionID] = new Player(0);
+            ServerTCP.RemoveClientObject(connectionID);
         }
 
     }

@@ -80,7 +80,7 @@ public class ClientTCP
     public static void PACKAGE_BroadcastMsg(string msg)
     {
         ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteInteger((int)ClientPackages.CBroadcastMessageToServer);
+        buffer.WriteInteger((int)ClientPackages.CReceiveMessageFromClient);
 
         buffer.WriteString(msg);
 
@@ -92,6 +92,17 @@ public class ClientTCP
     {
         ByteBuffer buffer = new ByteBuffer();
         buffer.WriteInteger((int)ClientPackages.CRequestConnectionID);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
+
+    public static void PACKAGE_RequestWorldPlayers(int spriteID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.CRequestWorldPlayers);
+
+        buffer.WriteInteger(spriteID);
 
         SendData(buffer.ToArray());
         buffer.Dispose();

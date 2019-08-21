@@ -19,9 +19,12 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SPingClient, HandlePingFromServer);
         packetListener.Add((int)ServerPackages.SSendChatMessageClient, HandleChatMsgFromServer);
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
+        packetListener.Add((int)ServerPackages.SSendNewPlayerToWorldPlayers, HandleNewPlayerToWorldPlayers);
+        packetListener.Add((int)ServerPackages.SSendWorldPlayersToNewPlayer, HandleWorldPlayersToNewPlayer);
         packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
-        packetListener.Add((int)ServerPackages.SSendOnlinePlayer, HandleOnlinePlayer);
         packetListener.Add((int)ServerPackages.SSendRemovePlayer, HandleRemovePlayer);
+
+        
     }
 
     public static void HandleData(byte[] data)
@@ -143,16 +146,49 @@ public class ClientHandleData
         int connectionID = buffer.ReadInteger();
         buffer.Dispose();
 
-        NetPlayer.instance.InstantiateNewPlayer(connectionID);
+        //Instantiate a new local player to the game
+        NetPlayer.instance.InstantiateNewPlayer(connectionID, 0);
 
-        // assign the connectionID to the PlayerInput class
-        PlayerInput.instance.connectionID = connectionID;
-
-        //Change the gameObjects name in unity's hierarchy
-        PlayerInput.instance.gameObject.name = $"Player | {connectionID}";
+        //Assign the connectionID to different classes
         NetPlayer.SetConnectionID(connectionID);
-        
+        PlayerInput.instance.connectionID = connectionID;
     }
+
+    private static void HandleNewPlayerToWorldPlayers(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+        int spriteID = buffer.ReadInteger();
+
+        buffer.Dispose();
+
+        NetPlayer.instance.InstantiateNewPlayer(connectionID, spriteID);
+    }
+
+    private static void HandleWorldPlayersToNewPlayer(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int playersOnline = buffer.ReadInteger();
+        for (int i = 0; i < playersOnline; i++)
+        {
+            int connectionID = buffer.ReadInteger();
+            float x = buffer.ReadFloat();
+            float y = buffer.ReadFloat();
+            float rotation = buffer.ReadFloat();
+            int spriteID = buffer.ReadInteger();
+            NetPlayer.instance.InstantiateNewPlayerAtPosition(connectionID, x, y, rotation, spriteID);
+        }
+        
+        buffer.Dispose();
+
+    }
+
 
     private static void HandlePlayerMovement(byte[] data)
     {
@@ -168,8 +204,8 @@ public class ClientHandleData
         buffer.Dispose();
 
         //Note: change z value!!!
-        NetPlayer.Players[connectionID].transform.position = new Vector3(posX, posY, 0);
-        NetPlayer.Players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
+        NetPlayer.players[connectionID].transform.position = new Vector3(posX, posY, 0);
+        NetPlayer.players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
     }
 
     private static void HandleOnlinePlayer(byte[] data)
@@ -184,8 +220,8 @@ public class ClientHandleData
         float playerRotation = buffer.ReadFloat();
 
         buffer.Dispose();
-        Debug.Log($"HandleOnlinePlayer:: Assigned connectionID: {playerID}");
-        NetPlayer.instance.InstantiateNewPlayer(playerID, playerPosX, playerPosY, playerRotation);
+
+        NetPlayer.instance.InstantiateNewPlayerAtPosition(playerID, playerPosX, playerPosY, playerRotation);
     }
 
     private static void HandleRemovePlayer(byte[] data)
@@ -199,6 +235,6 @@ public class ClientHandleData
         buffer.Dispose();
 
         NetworkManager.Destroy(GameObject.Find($"Player | {connectionID}"));
-        NetPlayer.Players.Remove(connectionID);
+        NetPlayer.players.Remove(connectionID);
     }
 }

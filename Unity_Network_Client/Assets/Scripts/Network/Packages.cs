@@ -4,15 +4,17 @@ public enum ServerPackages
     SPingClient = 1,
     SSendChatMessageClient,
     SSendConnectionID,
+    SSendNewPlayerToWorldPlayers,
+    SSendWorldPlayersToNewPlayer,
     SSendPlayerMovement,
-    SSendOnlinePlayer,
     SSendRemovePlayer
 }
 
 public enum ClientPackages
 {
     CPingServer = 1,
-    CBroadcastMessageToServer,
+    CReceiveMessageFromClient,
     CRequestConnectionID,
+    CRequestWorldPlayers,
     CSendMovement,
 }

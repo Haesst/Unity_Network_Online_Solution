@@ -16,6 +16,7 @@ namespace Unity_Network_Server
             packetListener.Add((int)ClientPackages.CPingServer, HandlePingFromClient);
             packetListener.Add((int)ClientPackages.CReceiveMessageFromClient, HandleChatMessageFromClient);
             packetListener.Add((int)ClientPackages.CRequestConnectionID, HandleRequestConnectionID);
+            packetListener.Add((int)ClientPackages.CRequestWorldPlayers, HandleRequestWorldPlayers);
             packetListener.Add((int)ClientPackages.CSendMovement, HandleClientMovement);
         }
 
@@ -139,9 +140,22 @@ namespace Unity_Network_Server
 
             buffer.Dispose();
 
-            Console.WriteLine(connectionID);
             ServerTCP.players[connectionID].ConnectionID = connectionID;
             ServerTCP.PACKET_SendConnectionID(connectionID);
+        }
+
+        private static void HandleRequestWorldPlayers(int connectionID, byte[] data)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteBytes(data);
+            int packageID = buffer.ReadInteger();
+
+            int spriteID = buffer.ReadInteger();
+
+            buffer.Dispose();
+
+            ServerTCP.players[connectionID].SpriteID = spriteID;
+            ServerTCP.PACKET_SendWorldPlayersToNewPlayer(connectionID);
         }
 
         private static void HandleClientMovement(int connectionID, byte[] data)
@@ -160,7 +174,7 @@ namespace Unity_Network_Server
             ServerTCP.players[connectionID].SetPlayerPosition(x, y, rotation);
 
             // Send player position to all clients
-            ServerTCP.PACKET_SendPlayerMovement(connectionID, ServerTCP.players[connectionID].PosX, ServerTCP.players[connectionID].PosY, ServerTCP.players[connectionID].Rotation);
+            ServerTCP.PACKET_SendPlayerMovement(connectionID, x, y, rotation);
         }
     }
 }

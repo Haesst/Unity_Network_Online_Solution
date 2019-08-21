@@ -9,7 +9,7 @@ public class NetPlayer : MonoBehaviour
     [SerializeField] private List<Sprite> sprites = new List<Sprite>();
     static SpriteRenderer g_ship;
 
-    public static Dictionary<int, GameObject> Players = new Dictionary<int, GameObject>();
+    public static Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
 
     private void Awake()
     {
@@ -32,27 +32,30 @@ public class NetPlayer : MonoBehaviour
 
     }
 
-    public void InstantiateNewPlayer(int connectionID)
+    public void InstantiateNewPlayer(int connectionID, int spriteID)
     {
-        if (connectionID <= 0 || Players.ContainsKey(connectionID)) { return; }
+        if (connectionID <= 0 || players.ContainsKey(connectionID)) { return; }
 
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
-        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[connectionID - 1];
-        Players.Add(connectionID, go);
+        go.name = $"Player | {connectionID}";
+        int randomSprite = spriteID == 0 ? Random.Range(0, 11) : spriteID;
+        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[randomSprite];
+        players.Add(connectionID, go);
+        players[connectionID].GetComponentInChildren<Player>().SpriteID = randomSprite;
+        ClientTCP.PACKAGE_RequestWorldPlayers(randomSprite);
     }
 
-    public void InstantiateNewPlayer(int connectionID, float posX, float posY, float rotation)
+    public void InstantiateNewPlayerAtPosition(int connectionID, float posX, float posY, float rotation, int sprite = 0)
     {
-        if (connectionID <= 0 || Players.ContainsKey(connectionID)) { return; }
-        Debug.Log($"InstantiateNewPlayer::Assigned connectionID: {connectionID}");
+        if (connectionID <= 0 || players.ContainsKey(connectionID)) { return; }
 
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
         go.transform.position = new Vector3(posX, posY, go.transform.position.z);
         go.transform.rotation = Quaternion.Euler(0, 0, rotation);
         go.GetComponent<Player>().ConnectionID = connectionID;
-        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[connectionID - 1];
+        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[sprite];
         go.name = $"Player | {connectionID}";
-        Players.Add(connectionID, go);
+        players.Add(connectionID, go);
     }
 
 }

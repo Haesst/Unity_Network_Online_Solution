@@ -10,14 +10,15 @@ namespace Unity_Network_Server
 {
     class ServerTCP
     {
+        private const bool DEBUG_PACKETS = false;
         private static TcpListener serverSocket;
-        public static ClientObject[] clientObjects;
-        public static Player[] players;
+
+        public static Dictionary<int, ClientObject> clientObjects = new Dictionary<int, ClientObject>();
+        public static Dictionary<int, Player> players = new Dictionary<int, Player>();
 
         public static void InitializeServer()
         {
             //InitializeMySQLServer();
-            InitializeClientObject();
             InitializeServerSocket();
 
             Console.WriteLine("\nServer is Running...");
@@ -44,30 +45,28 @@ namespace Unity_Network_Server
             serverSocket.BeginAcceptTcpClient(new AsyncCallback(ClientConnectCallback), null);
         }
 
-        private static void InitializeClientObject()
+        public static void RemoveClientObject(int connectionID)
         {
-            clientObjects = new ClientObject[Constants.MAX_PLAYERS];
-            players = new Player[Constants.MAX_PLAYERS];
-            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
-            {
-                clientObjects[i] = new ClientObject(null, 0);
-                players[i] = new Player(0);
-            }
+            clientObjects.Remove(connectionID);
+            players.Remove(connectionID);
+            PACKET_SendRemovePlayer(connectionID);
         }
 
         private static void ClientConnectCallback(IAsyncResult result)
         {
             TcpClient tempClient = serverSocket.EndAcceptTcpClient(result);
             serverSocket.BeginAcceptTcpClient(new AsyncCallback(ClientConnectCallback), null);
-
-
-            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
+            int id = ((IPEndPoint)tempClient.Client.RemoteEndPoint).Port;
+            if (!clientObjects.ContainsKey(id))
             {
-                if (clientObjects[i].socket == null)
-                {
-                    clientObjects[i] = new ClientObject(tempClient, i);
-                    return;
-                }
+                clientObjects.Add(id, new ClientObject(tempClient, id));
+                players.Add(id, new Player(id));
+            }
+            else
+            {
+                //NOTE: Will this "reconnect" if the port/key already exists, and try untill it find an empty key?
+                // Should we close the connection? from ClientObjects class
+                Console.WriteLine($"clientObject with id: {id} already exits!!");
             }
         }
 
@@ -83,7 +82,7 @@ namespace Unity_Network_Server
                 buffer.Dispose();
                 await Task.Delay(75);
 
-                if (Constants.DEBUG_PACKETS)
+                if (DEBUG_PACKETS)
                 {
                     ByteBuffer debugBuffer = new ByteBuffer();
                     debugBuffer.WriteBytes(data);
@@ -96,32 +95,24 @@ namespace Unity_Network_Server
 
         public static void SendDataToAll(byte[] data)
         {
-            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
+            foreach (var client in clientObjects)
             {
-                if (clientObjects[i] != null)
+                if (client.Value != null && client.Value.isConnected == true)
                 {
-                    if (clientObjects[i].isConnected)
-                    {
-                        SendDataTo(i, data);
-                        //await Task.Delay(75);
-                    }
+                    SendDataTo(client.Key, data);
                 }
             }
         }
 
         public static void SendDataToAllBut(int connectionID, byte[] data)
         {
-            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
+            foreach (var client in clientObjects)
             {
-                if (clientObjects[i] != null)
+                if (client.Value != null && client.Value.isConnected == true)
                 {
-                    if (clientObjects[i].isConnected)
+                    if (client.Key != connectionID)
                     {
-                        if (i != connectionID)
-                        {
-                            SendDataTo(i, data);
-                            //await Task.Delay(75);
-                        }
+                        SendDataTo(client.Key, data);
                     }
                 }
             }
@@ -162,18 +153,43 @@ namespace Unity_Network_Server
             buffer.WriteInteger(connectionID);
 
             SendDataTo(connectionID, buffer.ToArray());
-            //SendDataToAllBut(connectionID, buffer.ToArray());
-            //SendDataToAll(buffer.ToArray());
             buffer.Dispose();
-            for (int i = 1; i < ServerTCP.players.Length; i++)
+
+            PACKET_SendNewPlayerToWorld(connectionID);
+        }
+
+        public static void PACKET_SendNewPlayerToWorld(int connectionID)
+        {
+            // Send this player to all players on the server, except the player itself
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendNewPlayerToWorldPlayers);
+
+            buffer.WriteInteger(connectionID);
+            buffer.WriteInteger(ServerTCP.players[connectionID].SpriteID);
+
+            SendDataToAllBut(connectionID, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public static void PACKET_SendWorldPlayersToNewPlayer(int connectionID)
+        {
+            if (players.Count <= 1) { return; } // no need to send this packet if there is only 1 player online since there is nothing to retrive
+
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.SSendWorldPlayersToNewPlayer);
+
+            buffer.WriteInteger(players.Count - 1); // Send the amount of players connected to the server, minus the local player
+            foreach (var player in players)
             {
-                if (ServerTCP.players[i].ConnectionID > 0 && i != connectionID)
-                {
-                    PACKET_SendOnlinePlayer(connectionID, i);
-                    PACKET_SendOnlinePlayer(i, connectionID);
-                }
+                buffer.WriteInteger(player.Value.ConnectionID); // could just use key, but to be more specific, i take the values connection id
+                buffer.WriteFloat(player.Value.PosX);
+                buffer.WriteFloat(player.Value.PosY);
+                buffer.WriteFloat(player.Value.Rotation);
+                buffer.WriteInteger(player.Value.SpriteID);
             }
-            
+
+            SendDataTo(connectionID, buffer.ToArray());
+            buffer.Dispose();
         }
 
         public static void PACKET_SendPlayerMovement(int connectionID, float posX, float posY, float rotation)
@@ -190,19 +206,6 @@ namespace Unity_Network_Server
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
         }
-        public static void PACKET_SendOnlinePlayer(int connectionID, int playerID)
-        {
-            ByteBuffer buffer = new ByteBuffer();
-            buffer.WriteInteger((int)ServerPackages.SSendOnlinePlayer);
-
-            buffer.WriteInteger(playerID);
-            buffer.WriteFloat(players[playerID].PosX);
-            buffer.WriteFloat(players[playerID].PosY);
-            buffer.WriteFloat(players[playerID].Rotation);
-            SendDataTo(connectionID, buffer.ToArray());
-            buffer.Dispose();
-        }
-
         public static void PACKET_SendRemovePlayer(int connectionID)
         {
             ByteBuffer buffer = new ByteBuffer();

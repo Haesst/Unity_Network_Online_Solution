@@ -11,6 +11,7 @@ namespace Unity_Network_Server
         //ADDME!
         //TODO: Store all players info here
         int connectionID;
+        int spriteID;
         int health;
         private float posX;
         private float posY;
@@ -24,6 +25,7 @@ namespace Unity_Network_Server
         public float PosY { get => posY; }
         public float Rotation { get => rotation; }
         public int ConnectionID { get => connectionID; set => connectionID = value; }
+        public int SpriteID { get => spriteID; set => spriteID = value; }
 
         public void SetPlayerPosition(float posX, float posY, float rotation)
         {

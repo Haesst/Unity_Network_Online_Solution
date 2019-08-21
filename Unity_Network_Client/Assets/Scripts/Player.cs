@@ -5,6 +5,7 @@ public class Player : MonoBehaviour
     public static Player instance;
 
     private int connectionID;
+    private int spriteID;
     int health;
     private float posX;
     private float posY;
@@ -16,6 +17,7 @@ public class Player : MonoBehaviour
     }
 
     public int ConnectionID { get => connectionID; set => connectionID = value; }
+    public int SpriteID { get => spriteID; set => spriteID = value; }
 
     private void Awake()
     {
