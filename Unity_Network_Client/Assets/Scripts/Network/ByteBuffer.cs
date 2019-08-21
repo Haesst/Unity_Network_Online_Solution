@@ -1,19 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-//using UnityEngine;
 
 public class ByteBuffer : IDisposable
 {
-    private List<byte> Buff;
-    private byte[] readBuff;
+    private List<byte> buffer;
+    private byte[] readBuffer;
     private int readPos;
-    private bool buffUpdate = false;
+    private bool bufferUpdate = false;
 
     public ByteBuffer()
     {
-        Buff = new List<byte>();
-        readPos = 0;
+        buffer = new List<byte>(); // First thing first, create a new list with bytes
+        readPos = 0; // Set the readPos to 0
     }
 
     public int GetReadPos()
@@ -23,298 +22,263 @@ public class ByteBuffer : IDisposable
 
     public byte[] ToArray()
     {
-        return Buff.ToArray();
+        return buffer.ToArray();
     }
 
     public int Count()
     {
-        return Buff.Count;
+        return buffer.Count;
     }
 
     public int Length()
     {
-        return Count() - readPos;
+        return buffer.Count - readPos;
     }
 
     public void Clear()
     {
-        Buff.Clear();
-        readPos = 0;
+        buffer.Clear(); // Clear the buffer.
+        readPos = 0; // Reset readPos
     }
 
-    #region"Write Data"
-    public void WriteByte(byte Input)
+    #region Write Data
+
+    #region Numbers
+    public void WriteByte(byte input)
     {
-        Buff.Add(Input);
-        buffUpdate = true;
+        buffer.Add(input); // Since this is a byte list we can just enter the input
+        bufferUpdate = true; // Set update to true
     }
 
-    public void WriteBytes(byte[] Input)
+    public void WriteBytes(byte[] input)
     {
-        Buff.AddRange(Input);
-        buffUpdate = true;
+        buffer.AddRange(input); // Since we're adding an array of bytes we need to use AddRange
+        bufferUpdate = true; // Set update to true
     }
 
-    public void WriteShort(short Input)
+    public void WriteShort(short input)
     {
-        Buff.AddRange(BitConverter.GetBytes(Input));
-        buffUpdate = true;
+        buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
+        bufferUpdate = true; // Set update to true
     }
 
-    public void WriteInteger(int Input)
+    public void WriteInteger(int input)
     {
-        Buff.AddRange(BitConverter.GetBytes(Input));
-        buffUpdate = true;
+        buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
+        bufferUpdate = true; // Set update to true
     }
 
-    public void WriteLong(long Input)
+    public void WriteLong(long input)
     {
-        Buff.AddRange(BitConverter.GetBytes(Input));
-        buffUpdate = true;
+        buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
+        bufferUpdate = true; // Set update to true
     }
 
-    public void WriteFloat(float Input)
+    public void WriteFloat(float input)
     {
-        Buff.AddRange(BitConverter.GetBytes(Input));
-        buffUpdate = true;
+        buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
+        bufferUpdate = true; // Set update to true
+    }
+    #endregion Numbers
+
+    public void WriteString(string input)
+    {
+        buffer.AddRange(BitConverter.GetBytes(input.Length)); // Add the string length to the buffer
+        buffer.AddRange(Encoding.ASCII.GetBytes(input)); // Convert the input string to bytes with Encoding.ASCII and then add it to the buffer
+        bufferUpdate = true;
     }
 
-    public void WriteString(string Input)
+    #endregion Write Data
+    #region Read Data
+
+    public byte ReadByte(bool peek = true)
     {
-        Buff.AddRange(BitConverter.GetBytes(Input.Length));
-        Buff.AddRange(Encoding.ASCII.GetBytes(Input));
-        buffUpdate = true;
-    }
-    /*
-    public void WriteVector3(Vector3 Input)
-    {
-        byte[] vectorArray = new byte[sizeof(float) * 3];
-
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.x), 0, vectorArray, 0 * sizeof(float), sizeof(float));
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.y), 0, vectorArray, 1 * sizeof(float), sizeof(float));
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.z), 0, vectorArray, 2 * sizeof(float), sizeof(float));
-
-        Buff.AddRange(vectorArray);
-        buffUpdate = true;
-    }
-
-    public void WriteQuaternion(Quaternion Input)
-    {
-        byte[] quaternionArray = new byte[sizeof(float) * 4];
-
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.x), 0, quaternionArray, 0 * sizeof(float), sizeof(float));
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.y), 0, quaternionArray, 1 * sizeof(float), sizeof(float));
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.z), 0, quaternionArray, 2 * sizeof(float), sizeof(float));
-        Buffer.BlockCopy(BitConverter.GetBytes(Input.w), 0, quaternionArray, 3 * sizeof(float), sizeof(float));
-
-        Buff.AddRange(quaternionArray);
-        buffUpdate = true;
-    }*/
-    #endregion
-
-    #region"Read Data"
-    public byte ReadByte(bool Peek = true)
-    {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            byte ret = readBuff[readPos];
-            if (Peek & Buff.Count > readPos)
+            byte ret = readBuffer[readPos];
+            if (peek && buffer.Count > readPos)
             {
-                readPos += 1;
+                readPos++;
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [BYTE] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [BYTE] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public byte[] ReadBytes(int Length, bool Peek = true)
+    public byte[] ReadBytes(int length, bool peek = true)
     {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            byte[] ret = Buff.GetRange(readPos, Length).ToArray();
-            if (Peek & Buff.Count > readPos)
+            byte[] ret = buffer.GetRange(readPos, length).ToArray();
+
+            if (peek && buffer.Count > readPos)
             {
-                readPos += Length;
+                readPos += length;
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [BYTE[]] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [BYTE[]] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public short ReadShort(bool Peek = true)
+    public short ReadShort(bool peek = true)
     {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            short ret = BitConverter.ToInt16(readBuff, readPos);
-            if (Peek & Buff.Count > readPos)
+            short ret = BitConverter.ToInt16(readBuffer, readPos);
+            if (peek && buffer.Count > readPos)
             {
+                //int returnBitSize = BitConverter.GetBytes(ret).Length;
+                //readPos += returnBitSize; // Testing
+
                 readPos += 2;
+
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [SHORT] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [SHORT] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public int ReadInteger(bool Peek = true)
+    public int ReadInteger(bool peek = true)
     {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            int ret = BitConverter.ToInt32(readBuff, readPos);
-            if (Peek & Buff.Count > readPos)
+            int ret = BitConverter.ToInt32(readBuffer, readPos);
+            if (peek && buffer.Count > readPos)
             {
+                //int returnBitSize = BitConverter.GetBytes(ret).Length;
+                //readPos += returnBitSize; //Testing
+
                 readPos += 4;
+
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [INT] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [INTEGER] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public long ReadLong(bool Peek = true)
+    public long ReadLong(bool peek = true)
     {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            long ret = BitConverter.ToInt64(readBuff, readPos);
-            if (Peek & Buff.Count > readPos)
+            long ret = BitConverter.ToInt64(readBuffer, readPos);
+
+            if (peek && buffer.Count > readPos)
             {
                 readPos += 8;
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [LONG] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [LONG] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public float ReadFloat(bool Peek = true)
+    public float ReadFloat(bool peek = true)
     {
-        if (Buff.Count > readPos)
+        if (buffer.Count > readPos)
         {
-            if (buffUpdate)
+            if (bufferUpdate)
             {
-                readBuff = Buff.ToArray();
-                buffUpdate = false;
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
             }
 
-            float ret = BitConverter.ToSingle(readBuff, readPos);
-            if (Peek & Buff.Count > readPos)
+            float ret = BitConverter.ToSingle(readBuffer, readPos);
+
+            if (peek && buffer.Count > readPos)
             {
                 readPos += 4;
             }
             return ret;
         }
         else
-            throw new Exception("ByteBuffer [FLOAT] is past its limit!");
+        {
+            throw new Exception($"ByteBuffer [FLOAT] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public string ReadString(bool Peek = true)
+    public string ReadString(bool peek = true)
     {
-        int length = ReadInteger(true);
-
-        if (buffUpdate)
+        if (buffer.Count > readPos)
         {
-            readBuff = Buff.ToArray();
-            buffUpdate = false;
-        }
+            int length = ReadInteger();
 
-        string ret = Encoding.ASCII.GetString(readBuff, readPos, length);
-        if (Peek & Buff.Count > readPos)
-        {
-            readPos += length;
-        }
-        return ret;
-    }
-    /*
-    public Vector3 ReadVector3(bool Peek = true)
-    {
-        if (buffUpdate)
-        {
-            readBuff = Buff.ToArray();
-            buffUpdate = false;
-        }
+            if (bufferUpdate)
+            {
+                readBuffer = buffer.ToArray();
+                bufferUpdate = false;
+            }
 
-        byte[] ret = Buff.GetRange(readPos, sizeof(float) * 3).ToArray();
-        Vector3 vector3;
-        vector3.x = BitConverter.ToSingle(ret, 0 * sizeof(float));
-        vector3.y = BitConverter.ToSingle(ret, 1 * sizeof(float));
-        vector3.z = BitConverter.ToSingle(ret, 2 * sizeof(float));
+            string ret = Encoding.ASCII.GetString(readBuffer, readPos, length);
 
-        if (Peek)
-        {
-            readPos += sizeof(float) * 3;
+            if (peek && buffer.Count > readPos)
+            {
+                readPos += length;
+            }
+            return ret;
         }
-        return vector3;
+        else
+        {
+            throw new Exception($"ByteBuffer [STRING] is past it's limit!\nBuffer size is: {buffer.Count}, readPos is: {readPos}");
+        }
     }
 
-    public Quaternion ReadQuaternion(bool Peek = true)
-    {
-        if (buffUpdate)
-        {
-            readBuff = Buff.ToArray();
-            buffUpdate = false;
-        }
+    #endregion Read Data
 
-        byte[] ret = Buff.GetRange(readPos, sizeof(float) * 4).ToArray();
-        Quaternion quaternion;
-        quaternion.x = BitConverter.ToSingle(ret, 0 * sizeof(float));
-        quaternion.y = BitConverter.ToSingle(ret, 1 * sizeof(float));
-        quaternion.z = BitConverter.ToSingle(ret, 2 * sizeof(float));
-        quaternion.w = BitConverter.ToSingle(ret, 3 * sizeof(float));
-
-        if (Peek)
-        {
-            readPos += sizeof(float) * 4;
-        }
-        return quaternion;
-    }*/
-
-    #endregion
-
-    private bool disposedValue = false;
-
-    //IDisposable
+    private bool disposed = false;
     protected virtual void Dispose(bool disposing)
     {
-        if (!disposing)
+        if (!this.disposed)
         {
             if (disposing)
             {
-                Buff.Clear();
+                buffer.Clear();
                 readPos = 0;
             }
-            disposedValue = true;
+            disposed = true;
         }
     }
 

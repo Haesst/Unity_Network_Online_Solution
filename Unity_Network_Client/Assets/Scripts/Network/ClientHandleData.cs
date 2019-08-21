@@ -169,7 +169,6 @@ public class ClientHandleData
         //Note: change z value!!!
         NetPlayer.Players[connectionID].transform.position = new Vector3(posX, posY, 0);
         NetPlayer.Players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
-
     }
 
     private static void HandleOnlinePlayer(byte[] data)
