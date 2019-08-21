@@ -21,6 +21,7 @@ public class ClientHandleData
         packetListener.Add((int)ServerPackages.SSendConnectionID, HandleRequestConnectionID);
         packetListener.Add((int)ServerPackages.SSendPlayerMovement, HandlePlayerMovement);
         packetListener.Add((int)ServerPackages.SSendOnlinePlayer, HandleOnlinePlayer);
+        packetListener.Add((int)ServerPackages.SSendRemovePlayer, HandleRemovePlayer);
     }
 
     public static void HandleData(byte[] data)
@@ -185,5 +186,18 @@ public class ClientHandleData
         buffer.Dispose();
 
         NetPlayer.instance.InstantiateNewPlayer(playerID, playerPosX, playerPosY, playerRotation);
+    }
+
+    private static void HandleRemovePlayer(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+
+        buffer.Dispose();
+
+        NetworkManager.Destroy(GameObject.Find($"Player | {connectionID}"));
     }
 }

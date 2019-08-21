@@ -11,11 +11,14 @@ public class PlayerInput : MonoBehaviour
     private Rigidbody rb;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
+
+    private Camera mainCamera;
     private void Awake()
     {
         instance = this;
         // Set the rigidbody
         rb = GetComponent<Rigidbody>();
+        mainCamera = Camera.main;
     }
 
     private void LateUpdate()
@@ -33,6 +36,7 @@ public class PlayerInput : MonoBehaviour
                 ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
                 lastRotation = transform.rotation;
                 lastPosition = transform.position;
+                UpdateCameraPosition();
             }
         }
     }
@@ -44,7 +48,14 @@ public class PlayerInput : MonoBehaviour
 
         transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
+    }
 
+    private void UpdateCameraPosition()
+    {
+        if (connectionID == NetPlayer.connectionID)
+        {
+            mainCamera.transform.position = new Vector3(transform.position.x, transform.position.y, mainCamera.transform.position.z);
+        }
     }
 }
 

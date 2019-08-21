@@ -201,31 +201,16 @@ namespace Unity_Network_Server
             buffer.Dispose();
         }
 
-        /*
-        public static void PACKET_SendOnlinePlayers(int connectionID)
+        public static void PACKET_SendRemovePlayer(int connectionID)
         {
             ByteBuffer buffer = new ByteBuffer();
-            buffer.WriteInteger((int)ServerPackages.SSendOnlinePlayers);
-            List<Player> tempPlayers = new List<Player>();
+            buffer.WriteInteger((int)ServerPackages.SSendRemovePlayer);
 
-            for (int i = 1; i < Constants.MAX_PLAYERS; i++)
-            {
-                if (players[i] != null && i != connectionID)
-                {
-                    tempPlayers.Add(players[i]);
-                }
-            }
-
-            var bf = new BinaryFormatter();
-            var mStream = new MemoryStream();
-            bf.Serialize(mStream, tempPlayers);
-
-            buffer.WriteInteger(mStream.ToArray().Length);
-            buffer.WriteBytes(mStream.ToArray());
+            buffer.WriteInteger(connectionID);
 
             SendDataToAllBut(connectionID, buffer.ToArray());
             buffer.Dispose();
-        }*/
+        }
 
     }
 }
