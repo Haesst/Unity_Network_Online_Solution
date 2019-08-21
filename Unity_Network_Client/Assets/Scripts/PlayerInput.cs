@@ -2,12 +2,15 @@
 
 public class PlayerInput : MonoBehaviour
 {
-    public static PlayerInput instance;
-    public int connectionID;
-    private Rigidbody rb;
     [SerializeField] float rotationSpeed = 400;
     [SerializeField] float speed = 1000;
 
+    public int connectionID;
+
+    public static PlayerInput instance;
+    private Rigidbody rb;
+    private Vector3 lastPosition;
+    private Quaternion lastRotation;
     private void Awake()
     {
         instance = this;
@@ -23,6 +26,10 @@ public class PlayerInput : MonoBehaviour
             if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
             {
                 PlayerMovement();
+                if((transform.position != lastPosition) || (transform.rotation != lastRotation))
+                {
+                    ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
+                }
             }
             
         }
@@ -36,7 +43,6 @@ public class PlayerInput : MonoBehaviour
         transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
 
-        ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
     }
 }
 
