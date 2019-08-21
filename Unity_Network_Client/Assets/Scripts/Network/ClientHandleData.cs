@@ -199,5 +199,6 @@ public class ClientHandleData
         buffer.Dispose();
 
         NetworkManager.Destroy(GameObject.Find($"Player | {connectionID}"));
+        NetPlayer.Players.Remove(connectionID);
     }
 }
