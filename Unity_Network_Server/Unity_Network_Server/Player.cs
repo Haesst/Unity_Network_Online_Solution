@@ -8,6 +8,7 @@ namespace Unity_Network_Server
 {
     public class Player
     {
+        //ADDME!
         //TODO: Store all players info here
         int connectionID;
         int health;
