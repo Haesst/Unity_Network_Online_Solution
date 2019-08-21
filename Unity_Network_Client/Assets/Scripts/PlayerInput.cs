@@ -26,12 +26,14 @@ public class PlayerInput : MonoBehaviour
             if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
             {
                 PlayerMovement();
-                if((transform.position != lastPosition) || (transform.rotation != lastRotation))
-                {
-                    ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
-                }
             }
-            
+
+            if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
+            {
+                ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
+                lastRotation = transform.rotation;
+                lastPosition = transform.position;
+            }
         }
     }
 

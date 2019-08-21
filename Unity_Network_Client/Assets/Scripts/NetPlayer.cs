@@ -6,7 +6,7 @@ public class NetPlayer : MonoBehaviour
     public static NetPlayer instance;
     public static int connectionID { get; protected set; }
     public static Vector3 position { get; protected set; }
-    [SerializeField] private Sprite[] sprites;
+    [SerializeField] private List<Sprite> sprites = new List<Sprite>();
     static SpriteRenderer g_ship;
 
     public static Dictionary<int, GameObject> Players = new Dictionary<int, GameObject>();
@@ -14,7 +14,6 @@ public class NetPlayer : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        //sprites = Resources.LoadAll("Sprites/ships") as Sprite[];
         //Debug.Log(sprites.Length);
         //g_ship = GameObject.Find("Player/Ship").GetComponent<SpriteRenderer>();
     }
@@ -38,6 +37,7 @@ public class NetPlayer : MonoBehaviour
         if (connectionID <= 0) { return; }
 
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[connectionID - 1];
         Players.Add(connectionID, go);
     }
 

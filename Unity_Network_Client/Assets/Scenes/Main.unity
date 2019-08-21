@@ -759,7 +759,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80d1b48c6890f1240952ddfd7011d329, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sprites: []
+  sprites:
+  - {fileID: -6877657737085974523, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: 8383162673023287823, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: 3118750061902332518, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -797168720777067150, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -7653039100333099308, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -8084874238274840218, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -4648857032059535507, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: 8119249936409394056, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -1986511610909899991, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: -1369133203827550807, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: 4402405062159405059, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
+  - {fileID: 4107702307641232175, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
 --- !u!1 &1548583698
 GameObject:
   m_ObjectHideFlags: 0
