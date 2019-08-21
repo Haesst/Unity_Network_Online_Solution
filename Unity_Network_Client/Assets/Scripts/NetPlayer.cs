@@ -47,6 +47,7 @@ public class NetPlayer : MonoBehaviour
         go.transform.position = new Vector3(posX, posY, go.transform.position.z);
         go.transform.rotation = Quaternion.Euler(0, 0, rotation);
         go.GetComponent<Player>().ConnectionID = connectionID;
+        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[connectionID - 1];
         go.name = $"Player | {connectionID}";
         Players.Add(connectionID, go);
     }
