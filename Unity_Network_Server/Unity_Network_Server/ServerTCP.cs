@@ -161,15 +161,16 @@ namespace Unity_Network_Server
 
             buffer.WriteInteger(connectionID);
 
-            //SendDataTo(connectionID, buffer.ToArray());
+            SendDataTo(connectionID, buffer.ToArray());
             //SendDataToAllBut(connectionID, buffer.ToArray());
-            SendDataToAll(buffer.ToArray());
+            //SendDataToAll(buffer.ToArray());
             buffer.Dispose();
             for (int i = 1; i < ServerTCP.players.Length; i++)
             {
                 if (ServerTCP.players[i].ConnectionID > 0 && i != connectionID)
                 {
                     PACKET_SendOnlinePlayer(connectionID, i);
+                    PACKET_SendOnlinePlayer(i, connectionID);
                 }
             }
             

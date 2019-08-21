@@ -44,6 +44,7 @@ public class NetPlayer : MonoBehaviour
     public void InstantiateNewPlayer(int connectionID, float posX, float posY, float rotation)
     {
         if (connectionID <= 0 || Players.ContainsKey(connectionID)) { return; }
+        Debug.Log($"InstantiateNewPlayer::Assigned connectionID: {connectionID}");
 
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
         go.transform.position = new Vector3(posX, posY, go.transform.position.z);

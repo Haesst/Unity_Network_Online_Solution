@@ -184,7 +184,7 @@ public class ClientHandleData
         float playerRotation = buffer.ReadFloat();
 
         buffer.Dispose();
-
+        Debug.Log($"HandleOnlinePlayer:: Assigned connectionID: {playerID}");
         NetPlayer.instance.InstantiateNewPlayer(playerID, playerPosX, playerPosY, playerRotation);
     }
 
