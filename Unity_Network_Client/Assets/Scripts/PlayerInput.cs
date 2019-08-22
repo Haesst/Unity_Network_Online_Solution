@@ -23,22 +23,29 @@ public class PlayerInput : MonoBehaviour
 
     private void LateUpdate()
     {
-        // Make sure to only be able to move your own spaceship
-        if (connectionID == NetPlayer.connectionID)
+        PlayerMovement();
+        if(transform.position != lastPosition || transform.rotation != lastRotation)
         {
-            if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
-            {
-                PlayerMovement();
-            }
-
-            if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
-            {
-                ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
-                lastRotation = transform.rotation;
-                lastPosition = transform.position;
-                UpdateCameraPosition();
-            }
+            HandleClientData.SendPlayerMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
+            lastPosition = transform.position;
+            lastRotation = transform.rotation;
         }
+        // Make sure to only be able to move your own spaceship
+        //if (connectionID == NetPlayer.connectionID)
+        //{
+        //    if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+        //    {
+        //        PlayerMovement();
+        //    }
+
+        //    if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
+        //    {
+        //        ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
+        //        lastRotation = transform.rotation;
+        //        lastPosition = transform.position;
+        //        UpdateCameraPosition();
+        //    }
+        //}
     }
 
     private void PlayerMovement()
@@ -52,10 +59,10 @@ public class PlayerInput : MonoBehaviour
 
     private void UpdateCameraPosition()
     {
-        if (connectionID == NetPlayer.connectionID)
-        {
-            mainCamera.transform.position = new Vector3(transform.position.x, transform.position.y, mainCamera.transform.position.z);
-        }
+        //if (connectionID == NetPlayer.connectionID)
+        //{
+        //    mainCamera.transform.position = new Vector3(transform.position.x, transform.position.y, mainCamera.transform.position.z);
+        //}
     }
 }
 

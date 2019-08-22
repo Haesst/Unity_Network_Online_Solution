@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Net.Sockets;
+using UnityEngine;
 
 public class NetworkManager : MonoBehaviour {
 
@@ -6,26 +8,54 @@ public class NetworkManager : MonoBehaviour {
 
     [SerializeField] private string host; //Server IpAdress
     [SerializeField] private int port;  //Server Port
-    public bool isConnected;
-    [HideInInspector] public static int connectionID;
 
-    
+    private static Socket _clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+    private static byte[] buffer = new byte[1024 * 4];
+
+    public static Socket GetSocket { get => _clientSocket; }
+    public static byte[] GetBuffer { get => buffer; }
+    public static bool IsConnected { get => _clientSocket.Connected; }
+
+
 
     private void Awake()
     {
         instance = this;
-        host = "10.20.2.104";
+        host = "127.0.0.1";
         port = 7171;
-        isConnected = false;
         DontDestroyOnLoad(this);
         UnityThread.initUnityThread();
 
-        ClientHandleData.InitializePacketListener();
-        ClientTCP.InitializeClientSocket(host, port);
+        //ClientHandleData.InitializePacketListener();
+        LoopConnect(host, port);
     }
 
-    public void ReconnectToServer()
+    private static void LoopConnect(string host, int port)
     {
-        ClientTCP.InitializeClientSocket(host, port);
+        while (!_clientSocket.Connected)
+        {
+            int attempts = 0;
+            try
+            {
+                _clientSocket.Connect(host, port);
+                if (_clientSocket.Connected)
+                {
+                    Debug.Log($"Connected to: {_clientSocket.RemoteEndPoint}");
+                    _clientSocket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(HandleClientData.RecieveCallback), _clientSocket);
+                    // Request ID
+                    HandleClientData.RequestPlayerID();
+                }
+            }
+            catch (SocketException)
+            {
+                attempts++;
+                Debug.Log($"Connection Attempt: {attempts}");
+            }
+        }
+    }
+
+    public static void Send(byte[] buffer)
+    {
+        _clientSocket.Send(buffer);
     }
 }
