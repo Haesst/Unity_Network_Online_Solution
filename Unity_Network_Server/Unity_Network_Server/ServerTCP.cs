@@ -52,11 +52,20 @@ namespace Unity_Network_Server
             PACKET_SendRemovePlayer(connectionID);
         }
 
+        private static int GetPositiveHashCode()
+        {
+            Object obj = new Object();
+            int num = obj.GetHashCode();
+            num = (num < 0) ? -num : num;
+            return num;
+        }
+
         private static void ClientConnectCallback(IAsyncResult result)
         {
             TcpClient tempClient = serverSocket.EndAcceptTcpClient(result);
             serverSocket.BeginAcceptTcpClient(new AsyncCallback(ClientConnectCallback), null);
-            int id = ((IPEndPoint)tempClient.Client.RemoteEndPoint).Port;
+            //int id = ((IPEndPoint)tempClient.Client.RemoteEndPoint).Port;
+            int id = GetPositiveHashCode();
             if (!clientObjects.ContainsKey(id))
             {
                 clientObjects.Add(id, new ClientObject(tempClient, id));
@@ -154,8 +163,6 @@ namespace Unity_Network_Server
 
             SendDataTo(connectionID, buffer.ToArray());
             buffer.Dispose();
-
-            PACKET_SendNewPlayerToWorld(connectionID);
         }
 
         public static void PACKET_SendNewPlayerToWorld(int connectionID)
@@ -181,11 +188,14 @@ namespace Unity_Network_Server
             buffer.WriteInteger(players.Count - 1); // Send the amount of players connected to the server, minus the local player
             foreach (var player in players)
             {
-                buffer.WriteInteger(player.Value.ConnectionID); // could just use key, but to be more specific, i take the values connection id
-                buffer.WriteFloat(player.Value.PosX);
-                buffer.WriteFloat(player.Value.PosY);
-                buffer.WriteFloat(player.Value.Rotation);
-                buffer.WriteInteger(player.Value.SpriteID);
+                if (player.Key != connectionID)
+                {
+                    buffer.WriteInteger(player.Value.ConnectionID); // could just use key, but to be more specific, i take the values connection id
+                    buffer.WriteFloat(player.Value.PosX);
+                    buffer.WriteFloat(player.Value.PosY);
+                    buffer.WriteFloat(player.Value.Rotation);
+                    buffer.WriteInteger(player.Value.SpriteID);
+                }
             }
 
             SendDataTo(connectionID, buffer.ToArray());

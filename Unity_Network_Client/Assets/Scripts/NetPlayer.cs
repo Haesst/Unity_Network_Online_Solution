@@ -34,27 +34,31 @@ public class NetPlayer : MonoBehaviour
 
     public void InstantiateNewPlayer(int connectionID, int spriteID)
     {
-        if (connectionID <= 0 || players.ContainsKey(connectionID)) { return; }
+        if (connectionID <= 0 | players.ContainsKey(connectionID)) { return; }
 
-        GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        int randomSprite = spriteID <= 0 ? Random.Range(0, 11) : spriteID;
+
+        GameObject go = Instantiate(Resources.Load("Prefabs/Player")) as GameObject;
         go.name = $"Player | {connectionID}";
-        int randomSprite = spriteID == 0 ? Random.Range(0, 11) : spriteID;
         go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[randomSprite];
+
         players.Add(connectionID, go);
         players[connectionID].GetComponentInChildren<Player>().SpriteID = randomSprite;
+        BackgroundMove.instance.Player = players[connectionID].transform;
         ClientTCP.PACKAGE_RequestWorldPlayers(randomSprite);
     }
 
     public void InstantiateNewPlayerAtPosition(int connectionID, float posX, float posY, float rotation, int sprite = 0)
     {
-        if (connectionID <= 0 || players.ContainsKey(connectionID)) { return; }
+        if (connectionID <= 0 | players.ContainsKey(connectionID)) { return; }
 
-        GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        GameObject go = Instantiate(Resources.Load("Prefabs/Player")) as GameObject;
         go.transform.position = new Vector3(posX, posY, go.transform.position.z);
         go.transform.rotation = Quaternion.Euler(0, 0, rotation);
         go.GetComponent<Player>().ConnectionID = connectionID;
         go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[sprite];
         go.name = $"Player | {connectionID}";
+
         players.Add(connectionID, go);
     }
 

@@ -186,7 +186,6 @@ public class ClientHandleData
         }
         
         buffer.Dispose();
-
     }
 
 
@@ -203,25 +202,8 @@ public class ClientHandleData
 
         buffer.Dispose();
 
-        //Note: change z value!!!
         NetPlayer.players[connectionID].transform.position = new Vector3(posX, posY, 0);
         NetPlayer.players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
-    }
-
-    private static void HandleOnlinePlayer(byte[] data)
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
-
-        int playerID = buffer.ReadInteger();
-        float playerPosX = buffer.ReadFloat();
-        float playerPosY = buffer.ReadFloat();
-        float playerRotation = buffer.ReadFloat();
-
-        buffer.Dispose();
-
-        NetPlayer.instance.InstantiateNewPlayerAtPosition(playerID, playerPosX, playerPosY, playerRotation);
     }
 
     private static void HandleRemovePlayer(byte[] data)

@@ -156,6 +156,7 @@ namespace Unity_Network_Server
 
             ServerTCP.players[connectionID].SpriteID = spriteID;
             ServerTCP.PACKET_SendWorldPlayersToNewPlayer(connectionID);
+            ServerTCP.PACKET_SendNewPlayerToWorld(connectionID);
         }
 
         private static void HandleClientMovement(int connectionID, byte[] data)

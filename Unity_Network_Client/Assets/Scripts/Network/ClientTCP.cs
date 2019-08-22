@@ -102,6 +102,7 @@ public class ClientTCP
         ByteBuffer buffer = new ByteBuffer();
         buffer.WriteInteger((int)ClientPackages.CRequestWorldPlayers);
 
+        //Sending the sprite to the server to keep track of it, and distribute it to the other players later on.
         buffer.WriteInteger(spriteID);
 
         SendData(buffer.ToArray());
