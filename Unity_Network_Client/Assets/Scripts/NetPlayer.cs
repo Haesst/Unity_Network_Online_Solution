@@ -44,7 +44,7 @@ public class NetPlayer : MonoBehaviour
 
         players.Add(connectionID, go);
         players[connectionID].GetComponentInChildren<Player>().SpriteID = randomSprite;
-        BackgroundMove.instance.Player = players[connectionID].transform;
+        //ParallaxEffect.instance.Player = players[connectionID].transform;
         ClientTCP.PACKAGE_RequestWorldPlayers(randomSprite);
     }
 

@@ -4,11 +4,11 @@ public class PlayerInput : MonoBehaviour
 {
     [SerializeField] float rotationSpeed = 400;
     [SerializeField] float speed = 1000;
-
+    [SerializeField] float velocityLimit = 5f;
     public int connectionID;
 
     public static PlayerInput instance;
-    private Rigidbody rb;
+    private Rigidbody2D rb;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
 
@@ -17,7 +17,7 @@ public class PlayerInput : MonoBehaviour
     {
         instance = this;
         // Set the rigidbody
-        rb = GetComponent<Rigidbody>();
+        rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
     }
 
@@ -29,6 +29,11 @@ public class PlayerInput : MonoBehaviour
             if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
             {
                 PlayerMovement();
+            }
+
+            if (Input.GetButtonDown("Jump"))
+            {
+                new Projectile(transform);
             }
 
             if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
@@ -46,6 +51,7 @@ public class PlayerInput : MonoBehaviour
         float rotation = Input.GetAxis("Horizontal") * rotationSpeed * Time.deltaTime;
         float thrust = Input.GetAxis("Vertical") * speed * Time.deltaTime;
 
+        rb.velocity = Vector3.ClampMagnitude(rb.velocity, velocityLimit);
         transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
     }
