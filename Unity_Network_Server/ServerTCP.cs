@@ -28,7 +28,7 @@ namespace Unity_Network_Server
         private static float version = 0.2f; // Current server version
 
         public static Socket GetSocket { get => _serverSocket; }
-        public static void AddSocket(Socket socket) { _clientSockets.Add(socket, new Player()); }
+        public static void AddSocket(Socket socket) { _clientSockets.Add(socket, new Player(Guid.NewGuid())); }
         public static byte[] GetBuffer { get => _buffer; }
         public static List<Player> PlayerList { get => new List<Player>(_clientSockets.Values); } // Get a copy of the playerlist
 
@@ -62,6 +62,17 @@ namespace Unity_Network_Server
             Console.Clear();
             Console.WriteLine($"UNO SocketCore v.{version}");
             Console.WriteLine($"Currently {_clientSockets.Count} users connected.");
+            Console.WriteLine("Connected players:");
+            if(_clientSockets.Count <= 0)
+            {
+                Console.WriteLine("-");
+            } else
+            {
+                foreach (var item in _clientSockets)
+                {
+                    Console.WriteLine($"{item.Value.ID} from {item.Key.RemoteEndPoint}");
+                }
+            }
         }
 
         /// <summary>

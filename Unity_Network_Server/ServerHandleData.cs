@@ -136,19 +136,29 @@ namespace Unity_Network_Server
         /// <param name="socket">Socket of the player that wants the list</param>
         private static void HandlePlayersOnline(Socket socket)
         {
-            foreach (var player in ServerTCP.GetEveryPlayerExceptSocket(socket))
+            List<Player> playerList = new List<Player>(ServerTCP.GetEveryPlayerExceptSocket(socket));
+
+            if (playerList.Count <= 0)
+                return;
+
+            ByteBuffer buffer = new ByteBuffer(); // Create a new ByteBuffer
+            buffer.WriteInteger((int)RequestIDs.Server_SendExistingPlayers); // Write the requestID
+
+            buffer.WriteInteger(playerList.Count); // Write the number of players online
+            
+
+            foreach (var player in playerList)
             {
-                ByteBuffer buffer = new ByteBuffer(); // Create a new ByteBuffer
-                buffer.WriteInteger((int)RequestIDs.Server_SendExistingPlayer); // Write the requestID
 
                 buffer.WriteString(player.ID); // Write the players ID
                 buffer.WriteFloat(player.PosX); // Write the X Position
                 buffer.WriteFloat(player.PosY); // Write the Y Position
                 buffer.WriteFloat(player.Rotation); // Write the rotation
 
-                socket.Send(buffer.ToArray()); // Send the data to the player
-                buffer.Dispose(); // Clean up the buffer
             }
+
+            socket.Send(buffer.ToArray()); // Send the data to the player
+            buffer.Dispose(); // Clean up the buffer
         }
 
         /// <summary>

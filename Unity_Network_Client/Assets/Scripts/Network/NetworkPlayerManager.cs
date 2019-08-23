@@ -23,7 +23,6 @@ public class NetworkPlayerManager : MonoBehaviour
 
     public static GameObject InstantiateNewOtherPlayer(string connectionID, float posX, float posY, float rotation, int spriteID = 0)
     {
-        Debug.Log("Test");
         GameObject go = Instantiate(Resources.Load("Prefabs/OtherPlayer", typeof(GameObject)), new Vector3(posX, posY, 0), Quaternion.Euler(new Vector3(0,0,rotation))) as GameObject;
         go.name = $"Player: {connectionID}";
         return go;

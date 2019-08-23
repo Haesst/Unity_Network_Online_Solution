@@ -9,6 +9,9 @@ public class Player : MonoBehaviour
     private float posX;
     private float posY;
     private float rotation;
+    private float speed;
+
+    public float Speed { get => speed; set => speed = value; }
 
     public Player(int connectionID)
     {
@@ -21,6 +24,4 @@ public class Player : MonoBehaviour
     {
         instance = this;
     }
-
-    
 }

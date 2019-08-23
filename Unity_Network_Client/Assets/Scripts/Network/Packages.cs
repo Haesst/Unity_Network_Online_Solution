@@ -7,7 +7,7 @@ public enum RequestIDs
     Client_SendMovement,
     Server_SendMovement,
     Server_SendOtherPlayer,
-    Server_SendExistingPlayer,
+    Server_SendExistingPlayers,
     Server_SendDisconnect,
     Client_RequestPlayersOnline,
 }

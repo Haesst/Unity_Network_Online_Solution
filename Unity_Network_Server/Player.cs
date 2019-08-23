@@ -10,7 +10,7 @@ namespace Unity_Network_Server
     {
         //ADDME!
         //TODO: Store all players info here
-        static string id;
+        private string id;
         int health;
         private float posX;
         private float posY;
@@ -18,9 +18,9 @@ namespace Unity_Network_Server
 
         public string ID { get => id; }
 
-        public Player()
+        public Player(Guid guid)
         {
-            id = Guid.NewGuid().ToString();
+            id = guid.ToString();
         }
         public float PosX { get => posX; }
         public float PosY { get => posY; }
