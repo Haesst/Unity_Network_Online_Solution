@@ -2,8 +2,8 @@
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField] float rotationSpeed = 400;
-    [SerializeField] float speed = 1000;
+    [SerializeField] float rotationSpeed = 0.1f;
+    [SerializeField] float shipSpeed = 1000f;
     [SerializeField] float velocityLimit = 5f;
     public int connectionID;
 
@@ -13,6 +13,9 @@ public class PlayerInput : MonoBehaviour
     private Quaternion lastRotation;
 
     private Camera mainCamera;
+    private CursorLockMode oldLockState;
+    private bool showCursor;
+
     private void Awake()
     {
         instance = this;
@@ -20,18 +23,48 @@ public class PlayerInput : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
     }
+    private void OnEnable()
+    {
+        oldLockState = Cursor.lockState;
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+    private void OnDisable()
+    {
+        Cursor.lockState = oldLockState;
+    }
 
     private void LateUpdate()
     {
+        
+
         // Make sure to only be able to move your own spaceship
         if (connectionID == NetPlayer.connectionID)
         {
-            if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
+            if (Input.GetKeyDown(KeyCode.Escape))
             {
-                PlayerMovement();
+                if (showCursor)
+                {
+                    Cursor.visible = false;
+                    Cursor.lockState = CursorLockMode.Locked;
+                    showCursor = false;
+                }
+                else
+                {
+                    Cursor.visible = true;
+                    Cursor.lockState = CursorLockMode.None;
+                    showCursor = true;
+                }
             }
 
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetAxis("Mouse X") != 0 && showCursor == false)
+            {
+                PlayerRotate();
+            }
+            if (Input.GetAxis("Fire2") != 0 && showCursor == false)
+            {
+                PlayerThrust();
+            }
+            if (Input.GetButtonDown("Fire1") && showCursor == false)
             {
                 new Projectile(transform);
             }
@@ -45,15 +78,17 @@ public class PlayerInput : MonoBehaviour
             }
         }
     }
-
-    private void PlayerMovement()
+    private void PlayerThrust()
     {
-        float rotation = Input.GetAxis("Horizontal") * rotationSpeed * Time.deltaTime;
-        float thrust = Input.GetAxis("Vertical") * speed * Time.deltaTime;
-
+        float thrust = Input.GetAxis("Fire2") * shipSpeed * Time.deltaTime;
         rb.velocity = Vector3.ClampMagnitude(rb.velocity, velocityLimit);
-        transform.Rotate(new Vector3(0, 0, -1) * rotation);
         rb.AddForce(transform.up * thrust);
+    }
+
+    private void PlayerRotate()
+    {
+        float rotation = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
+        transform.Rotate(0, 0, -rotation);
     }
 
     private void UpdateCameraPosition()
