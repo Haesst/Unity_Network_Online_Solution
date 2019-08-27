@@ -3,6 +3,7 @@ using System.Net.Sockets;
 
 public class ClientTCP
 {
+    //Test
     private static Socket _socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
     private static byte[] _buffer;
 
