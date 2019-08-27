@@ -139,7 +139,7 @@ namespace Unity_Network_Server_SocketCore
             buffer.Dispose();
 
             Socket tempSocket = ServerTCP.GetSocketByConnectionID(playerID);
-            ServerTCP._clientSockets[tempSocket].player.BulletHitId = bulletID;
+            //ServerTCP._clientSockets[tempSocket].player.BulletHitId = bulletID;   // Makes the players disconnect, why?
             ServerTCP.PACKET_RemoveProjectileFromClient(ref socket, bulletID);
         }
     }

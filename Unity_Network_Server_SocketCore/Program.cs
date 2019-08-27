@@ -30,7 +30,7 @@ namespace Unity_Network_Server_SocketCore
                     break;
                 }
             }
-            
+
         }
     }
 }

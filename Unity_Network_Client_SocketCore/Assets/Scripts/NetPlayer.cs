@@ -41,7 +41,7 @@ public class NetPlayer : MonoBehaviour
 
     public static int GetPositiveHashCode()
     {
-        Object obj = new Object();
+        System.Object obj = new System.Object();
         int num = obj.GetHashCode();
         num = (num < 0) ? -num : num;
         return num;
@@ -80,4 +80,5 @@ public class NetPlayer : MonoBehaviour
     {
         Destroy(gameObject);
     }
+
 }

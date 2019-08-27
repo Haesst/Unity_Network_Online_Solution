@@ -16,7 +16,7 @@ public class NetworkManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        host = "10.20.2.104";
+        host = "127.0.0.1";
         port = 7171;
         isConnected = false;
         pingMs = GameObject.Find("Ping").GetComponentInChildren<Text>();

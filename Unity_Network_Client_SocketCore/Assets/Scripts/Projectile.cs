@@ -10,6 +10,7 @@ public class Projectile : MonoBehaviour
     float maxTravelTime;
     int timer;
     int bulletID;
+    GameObject bullet;
 
     private void Awake()
     {
@@ -20,12 +21,13 @@ public class Projectile : MonoBehaviour
     public Projectile(Transform parent, int bulletID)
     {
         this.bulletID = bulletID;
+        Debug.Log(this.bulletID);
         startPosition = parent.position + parent.up;
-        GameObject bullet = Instantiate(NetPlayer.bulletPrefab);
+        bullet = Instantiate(NetPlayer.bulletPrefab);
         bullet.name = $"Bullet | {bulletID}";
         bullet.transform.rotation = parent.rotation;
         bullet.transform.position = startPosition;
-        NetPlayer.projectiles.Add(bulletID, gameObject);
+        NetPlayer.projectiles.Add(bulletID, bullet);
     }
 
     private void FixedUpdate()
@@ -35,7 +37,7 @@ public class Projectile : MonoBehaviour
 
         if (timer >= maxTravelTime)
         {
-            Destroy(gameObject);
+            DestroyBullet(bulletID);
         }
     }
     private void OnTriggerEnter2D(Collider2D collision)
@@ -43,7 +45,15 @@ public class Projectile : MonoBehaviour
         //TODO: Explosion effect
         int playerID = collision.gameObject.GetComponent<Player>().ConnectionID;
         ClientTCP.PACKAGE_SendProjectileHit(bulletID, playerID);
+        DestroyBullet(bulletID);
+    }
+
+    private void DestroyBullet(int bulletID)
+    {
+        // bulletID is always 0 why?
+        NetPlayer.projectiles.Remove(bulletID);
         Destroy(gameObject);
+        Debug.Log($"Projectiles dictonary: {NetPlayer.projectiles.Count}");
     }
 
     private void MoveProjectile()

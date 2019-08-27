@@ -10,7 +10,7 @@ namespace Unity_Network_Server_SocketCore
 {
     class ServerTCP
     {
-        private const bool DEBUG_PACKETS = true;
+        private const bool DEBUG_PACKETS = false;
         public static Dictionary<Socket, ClientSocket> _clientSockets = new Dictionary<Socket, ClientSocket>();
         public static int onlinePlayerCount;
         private static Socket _serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);

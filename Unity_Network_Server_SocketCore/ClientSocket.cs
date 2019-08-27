@@ -17,10 +17,7 @@ namespace Unity_Network_Server_SocketCore
             _socket = socket;
             _socket.NoDelay = true;
             _buffer = new byte[4096];
-            if (_socket.Connected)
-            {
-                _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
-            }
+            _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
             Console.WriteLine($"Incoming connection from {_socket.RemoteEndPoint.ToString()} | connectionID: {connectionID}");
             isConnected = true;
             player = new Player(connectionID);
