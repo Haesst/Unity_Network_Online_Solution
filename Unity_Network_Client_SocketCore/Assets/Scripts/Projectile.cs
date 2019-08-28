@@ -1,16 +1,16 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
     Rigidbody2D rb;
     CapsuleCollider2D capsuleCollider;
-    Vector3 startPosition;
-    Quaternion projectileRotation;
     float projectileSpeed;
     float maxTravelTime;
     int timer;
-    int bulletID;
-    GameObject bullet;
+
+    public Transform parent;
+    public int bulletID;
 
     private void Awake()
     {
@@ -18,46 +18,30 @@ public class Projectile : MonoBehaviour
         projectileSpeed = 10f;
         maxTravelTime = 100f;
     }
-    public Projectile(Transform parent, int bulletID)
-    {
-        this.bulletID = bulletID;
-        Debug.Log(this.bulletID);
-        startPosition = parent.position + parent.up;
-        bullet = Instantiate(NetPlayer.bulletPrefab);
-        bullet.name = $"Bullet | {bulletID}";
-        bullet.transform.rotation = parent.rotation;
-        bullet.transform.position = startPosition;
-        NetPlayer.projectiles.Add(bulletID, bullet);
-    }
-
     private void FixedUpdate()
     {
         timer++;
-        MoveProjectile();
-
-        if (timer >= maxTravelTime)
-        {
-            DestroyBullet(bulletID);
-        }
+        transform.position = transform.position + ((transform.up * Time.deltaTime) * projectileSpeed);
+        if (timer >= maxTravelTime) { DestroyBullet(); }
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        //TODO: Explosion effect
-        int playerID = collision.gameObject.GetComponent<Player>().ConnectionID;
-        ClientTCP.PACKAGE_SendProjectileHit(bulletID, playerID);
-        DestroyBullet(bulletID);
+        if (collision.tag == "Bullet") { return; }  // do nothing if we collide whit a other bullet for now, should we be able to destory other bullets?
+        if (collision.tag == "Player")
+        {
+            // This gets the playerID of the player that got hit, and the bulletID of the bullet that hit the player.
+            // Then send it to the server for comparing, and also destory the local bullet gameObject
+            //TODO: Explosion effect
+            int playerID = collision.GetComponent<Player>().ConnectionID;
+            ClientTCP.PACKAGE_SendProjectileHit(bulletID, playerID);
+            DestroyBullet();
+        }
+
     }
 
-    private void DestroyBullet(int bulletID)
+    private void DestroyBullet()
     {
-        // bulletID is always 0 why?
         NetPlayer.projectiles.Remove(bulletID);
         Destroy(gameObject);
-        Debug.Log($"Projectiles dictonary: {NetPlayer.projectiles.Count}");
-    }
-
-    private void MoveProjectile()
-    {
-        transform.position = transform.position + ((transform.up * Time.deltaTime) * projectileSpeed);
     }
 }

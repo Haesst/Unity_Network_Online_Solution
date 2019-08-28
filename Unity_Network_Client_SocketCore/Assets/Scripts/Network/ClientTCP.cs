@@ -122,4 +122,15 @@ public class ClientTCP
         SendData(buffer.ToArray());
         buffer.Dispose();
     }
+    public static void PACKAGE_SendPlayerGotHit(int connectionID, int bulletID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.Client_SendPlayerGotHit);
+
+        buffer.WriteInteger(connectionID);
+        buffer.WriteInteger(bulletID);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
 }

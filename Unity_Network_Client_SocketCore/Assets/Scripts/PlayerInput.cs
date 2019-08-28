@@ -65,9 +65,7 @@ public class PlayerInput : MonoBehaviour
             }
             if (Input.GetButtonDown("Fire1") && showCursor == false)
             {
-                int bulletID = NetPlayer.GetPositiveHashCode();
-                ClientTCP.PACKAGE_SendProjectile(bulletID);
-                new Projectile(transform, bulletID);  // Let the server instantiate the projectile instead?
+                NetPlayer.InstantiateNewProjectile(connectionID);
             }
 
             if ((transform.position != lastPosition) || (transform.rotation != lastRotation))

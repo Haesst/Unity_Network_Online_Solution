@@ -20,6 +20,7 @@ namespace Unity_Network_Server_SocketCore
             packetList.Add((int)ClientPackages.Client_SendMovement, HandleClientMovement);
             packetList.Add((int)ClientPackages.Client_SendProjectile, HandleNewProjectile);
             packetList.Add((int)ClientPackages.Client_SendProjectileHit, HandleProjectileHit);
+            packetList.Add((int)ClientPackages.Client_SendPlayerGotHit, HandlePlayerGotHit);
         }
 
         public static void HandleData(Socket socket, byte[] data)
@@ -96,6 +97,7 @@ namespace Unity_Network_Server_SocketCore
             ServerTCP._clientSockets[socket].player.SpriteID = spriteID;
             ServerTCP.PACKET_SendWorldPlayersToNewPlayer(ref socket);
             ServerTCP.PACKET_SendNewPlayerToWorld(ref socket);
+            ServerTCP.PACKET_SendPlayerHealth(ref socket, ServerTCP._clientSockets[socket].player.Health);
         }
 
         private static void HandleClientMovement(Socket socket, byte[] data)
@@ -139,8 +141,37 @@ namespace Unity_Network_Server_SocketCore
             buffer.Dispose();
 
             Socket tempSocket = ServerTCP.GetSocketByConnectionID(playerID);
-            //ServerTCP._clientSockets[tempSocket].player.BulletHitId = bulletID;   // Makes the players disconnect, why?
-            ServerTCP.PACKET_RemoveProjectileFromClient(ref socket, bulletID);
+            ServerTCP._clientSockets[tempSocket].player.BulletHitId = bulletID;
+        }
+        private static void HandlePlayerGotHit(Socket socket, byte[] data)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteBytes(data);
+            int packageID = buffer.ReadInteger();
+            int playerID = buffer.ReadInteger();    // "connectionID" of player that got hit
+            int bulletID = buffer.ReadInteger();
+            buffer.Dispose();
+
+            Socket tempSocket = ServerTCP.GetSocketByConnectionID(playerID);
+            Player player = ServerTCP._clientSockets[tempSocket].player;
+
+            if (player.IsAlive && player.BulletHitId == bulletID)
+            {
+                if (player.Health > 1)
+                {
+                    player.Health--;
+                    ServerTCP.PACKET_SendPlayerHealth(ref socket, player.Health);
+                    //Console.WriteLine($"playerID: {player.ConnectionID} got hit! HP: {player.Health}");
+                }
+                else
+                {
+                    player.IsAlive = false;
+                    player.Health--;
+                    ServerTCP.PACKET_SendPlayerHealth(ref socket, player.Health);
+                    //Console.WriteLine($"playerID: {player.ConnectionID} died!");
+                    //TODO: send player is dead
+                }
+            }
         }
     }
 }

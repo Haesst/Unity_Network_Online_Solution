@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class NetPlayer : MonoBehaviour
 {
@@ -15,11 +17,14 @@ public class NetPlayer : MonoBehaviour
     public static GameObject bulletPrefab;
     public static GameObject playerPrefab;
 
+    public static Text healthText;
+
     private void Awake()
     {
         instance = this;
         bulletPrefab = Resources.Load("Prefabs/Bullet") as GameObject;
         playerPrefab = Resources.Load("Prefabs/Player") as GameObject;
+        healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
         //Debug.Log(sprites.Length);
         //g_ship = GameObject.Find("Player/Ship").GetComponent<SpriteRenderer>();
     }
@@ -29,7 +34,6 @@ public class NetPlayer : MonoBehaviour
         // If there is no connectionID set request a connectionID from the server
         if (connectionID <= 0) { ClientTCP.PACKAGE_RequestConnectionID(); }
         if (connectionID != 0 && players.Count < onlinePlayerCount) { ClientTCP.PACKAGE_RequestWorldPlayers(players[connectionID].GetComponent<Player>().SpriteID); }
-
     }
     public static void SetConnectionID(int id)
     {
@@ -56,6 +60,7 @@ public class NetPlayer : MonoBehaviour
         GameObject go = Instantiate(playerPrefab);
         go.name = $"Player | {connectionID}";
         go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[randomSprite];
+        go.GetComponent<Player>().ConnectionID = connectionID;
 
         players.Add(connectionID, go);
         players[connectionID].GetComponentInChildren<Player>().SpriteID = randomSprite;
@@ -74,6 +79,40 @@ public class NetPlayer : MonoBehaviour
         go.name = $"Player | {connectionID}";
 
         players.Add(connectionID, go);
+    }
+    public static void InstantiateNewProjectile(int connectionID)
+    {
+        int bulletID = GetPositiveHashCode();
+        Transform parent = players[connectionID].transform; // who shot the projectile
+
+        ClientTCP.PACKAGE_SendProjectile(bulletID); // pass in connectionID aswell when done whit the local stuff, to get reference who fire to sync on other clients
+
+        GameObject bullet = Instantiate(bulletPrefab);
+        bullet.name = $"Bullet | {bulletID}";
+        bullet.transform.rotation = parent.rotation;
+        bullet.transform.position = parent.position + parent.up;
+
+        Projectile projectileData = bullet.GetComponent<Projectile>();
+        projectileData.bulletID = bulletID;
+        projectileData.parent = parent;
+
+        projectiles.Add(bulletID, bullet);
+    }
+
+    public static void InstantiateNewProjectile(int connectionID, int bulletID)
+    {
+        Transform parent = players[connectionID].transform;
+
+        GameObject bullet = Instantiate(bulletPrefab);
+        bullet.name = $"Bullet | {bulletID}";
+        bullet.transform.rotation = parent.rotation;
+        bullet.transform.position = parent.position + parent.up;
+
+        Projectile projectileData = bullet.GetComponent<Projectile>();
+        projectileData.bulletID = bulletID;
+        projectileData.parent = parent;
+
+        projectiles.Add(bulletID, bullet);
     }
 
     public static void Destroy(GameObject gameObject)

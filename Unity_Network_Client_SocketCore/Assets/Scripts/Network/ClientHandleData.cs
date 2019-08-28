@@ -18,7 +18,7 @@ public class ClientHandleData
         packetList.Add((int)ServerPackages.Server_SendPlayerMovement, HandlePlayerMovement);
         packetList.Add((int)ServerPackages.Server_SendRemovePlayer, HandleRemovePlayer);
         packetList.Add((int)ServerPackages.Server_SendNewProjectile, HandleNewProjectile);
-        packetList.Add((int)ServerPackages.Server_SendRemoveProjectile, HandleRemoveProjectile);
+        packetList.Add((int)ServerPackages.Server_SendPlayerHealth, HandlePlayerHealth);
     }
     public static void HandleData(byte[] data)
     {
@@ -165,18 +165,25 @@ public class ClientHandleData
         int bulletID = buffer.ReadInteger();
 
         buffer.Dispose();
-        new Projectile(NetPlayer.players[connectionID].transform, bulletID);
+        NetPlayer.InstantiateNewProjectile(connectionID, bulletID);
     }
-    private static void HandleRemoveProjectile(byte[] data)
+
+    private static void HandlePlayerHealth(byte[] data)
     {
         ByteBuffer buffer = new ByteBuffer();
         buffer.WriteBytes(data);
         int packageID = buffer.ReadInteger();
-        int bulletID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+        int health = buffer.ReadInteger();
 
         buffer.Dispose();
 
-        NetPlayer.Destroy(NetPlayer.projectiles[bulletID]);
-        NetPlayer.projectiles.Remove(bulletID);
+        if (connectionID == NetPlayer.connectionID)
+        {
+            Player player = NetPlayer.players[connectionID].GetComponent<Player>();
+            player.Health = health;
+            NetPlayer.healthText.text = $"Health: {health}";
+        }
     }
 }

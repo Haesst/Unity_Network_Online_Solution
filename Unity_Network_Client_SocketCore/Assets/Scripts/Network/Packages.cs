@@ -9,7 +9,7 @@ public enum ServerPackages
     Server_SendPlayerMovement,
     Server_SendRemovePlayer,
     Server_SendNewProjectile,
-    Server_SendRemoveProjectile
+    Server_SendPlayerHealth,
 }
 
 public enum ClientPackages
@@ -20,5 +20,6 @@ public enum ClientPackages
     Client_RequestWorldPlayers,
     Client_SendMovement,
     Client_SendProjectile,
-    Client_SendProjectileHit
+    Client_SendProjectileHit,
+    Client_SendPlayerGotHit
 }

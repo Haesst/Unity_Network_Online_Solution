@@ -243,16 +243,16 @@ namespace Unity_Network_Server_SocketCore
             SendDataToAllBut(ref socket, buffer.ToArray());
             buffer.Dispose();
         }
-
-        public static void PACKET_RemoveProjectileFromClient(ref Socket socket, int bulletID)
+        public static void PACKET_SendPlayerHealth(ref Socket socket, int health)
         {
             ByteBuffer buffer = new ByteBuffer();
-            buffer.WriteInteger((int)ServerPackages.Server_SendRemoveProjectile);
-            buffer.WriteInteger(bulletID);
+            buffer.WriteInteger((int)ServerPackages.Server_SendPlayerHealth);
 
-            SendDataToAllBut(ref socket, buffer.ToArray());
+            buffer.WriteInteger(_clientSockets[socket].connectionID);
+            buffer.WriteInteger(health);
+
+            SendDataToAll(buffer.ToArray());
             buffer.Dispose();
         }
-        
     }
 }
