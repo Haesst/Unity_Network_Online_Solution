@@ -10,8 +10,8 @@ public class NetworkManager : MonoBehaviour
     [SerializeField] private int port;  //Server Port
     public bool isConnected;
     [HideInInspector] public static int connectionID;
-    public Text pingMs;
-    public Stopwatch elapsedMsTime;
+    public static Text pingMs;
+    public static Stopwatch elapsedMsTime;
 
     private void Awake()
     {

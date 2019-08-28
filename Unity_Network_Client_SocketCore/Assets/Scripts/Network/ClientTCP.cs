@@ -55,7 +55,7 @@ public class ClientTCP
 
         SendData(buffer.ToArray());
         buffer.Dispose();
-        NetworkManager.instance.elapsedMsTime.Restart();
+        NetworkManager.elapsedMsTime.Restart();
     }
 
     public static void PACKAGE_BroadcastMsg(string msg)

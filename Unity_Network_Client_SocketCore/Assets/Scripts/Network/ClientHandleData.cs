@@ -47,8 +47,12 @@ public class ClientHandleData
         {
             NetworkManager.instance.isConnected = true;
         }
-        NetworkManager.instance.elapsedMsTime.Stop();
-        NetworkManager.instance.pingMs.text = $"Ping: {NetworkManager.instance.elapsedMsTime.ElapsedMilliseconds}ms";
+        NetworkManager.elapsedMsTime.Stop();
+        //if (NetworkManager.pingMs.color != Color.white) { NetworkManager.pingMs.color = Color.white; }
+        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 100) { NetworkManager.pingMs.color = Color.red; }
+        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 40) { NetworkManager.pingMs.color = Color.yellow; }
+        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds < 40) { NetworkManager.pingMs.color = Color.green; }
+        NetworkManager.pingMs.text = $"Ping: {NetworkManager.elapsedMsTime.ElapsedMilliseconds}ms";
         //Debug.Log("You got a ping from the server, client is sending a ping back to the server.");
         ClientTCP.PACKAGE_PingToServer();
 

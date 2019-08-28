@@ -22,6 +22,7 @@ public class PlayerInput : MonoBehaviour
         // Set the rigidbody
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
+        Cursor.lockState = CursorLockMode.None;
     }
     private void OnEnable()
     {
@@ -35,8 +36,6 @@ public class PlayerInput : MonoBehaviour
 
     private void LateUpdate()
     {
-        
-
         // Make sure to only be able to move your own spaceship
         if (connectionID == NetPlayer.connectionID)
         {
