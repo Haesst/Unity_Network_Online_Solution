@@ -9,7 +9,6 @@ public class NetPlayer : MonoBehaviour
     public static int connectionID { get; protected set; }
     public static Vector3 position { get; protected set; }
     [SerializeField] private List<Sprite> sprites = new List<Sprite>();
-    static SpriteRenderer g_ship;
 
     public static Dictionary<int, GameObject> players = new Dictionary<int, GameObject>();
     public static Dictionary<int, GameObject> projectiles = new Dictionary<int, GameObject>();
@@ -25,8 +24,6 @@ public class NetPlayer : MonoBehaviour
         bulletPrefab = Resources.Load("Prefabs/Bullet") as GameObject;
         playerPrefab = Resources.Load("Prefabs/Player") as GameObject;
         healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
-        //Debug.Log(sprites.Length);
-        //g_ship = GameObject.Find("Player/Ship").GetComponent<SpriteRenderer>();
     }
 
     private void FixedUpdate()
@@ -39,8 +36,6 @@ public class NetPlayer : MonoBehaviour
     {
         if (connectionID != 0) { return; }
         connectionID = id;
-        //g_ship.sprite = sprites[connectionID];
-
     }
 
     public static int GetPositiveHashCode()
