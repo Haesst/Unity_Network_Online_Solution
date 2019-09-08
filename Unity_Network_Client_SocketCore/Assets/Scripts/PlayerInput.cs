@@ -23,6 +23,7 @@ public class PlayerInput : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
         Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = false;
     }
     private void OnEnable()
     {
