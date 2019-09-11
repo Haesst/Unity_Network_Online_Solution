@@ -63,6 +63,9 @@ public class HandleClientData : MonoBehaviour
             case ((int)RequestIDs.Server_SendDisconnect):
                 HandlePlayerDisconnect(buffer);
                 break;
+            case ((int)RequestIDs.Server_SendNewBullet):
+                HandleNewBullet(buffer);
+                break;
             case ((int)RequestIDs.Server_SendFalseRequest):
                 string msg = buffer.ReadString();
                 buffer.Dispose();
@@ -197,5 +200,52 @@ public class HandleClientData : MonoBehaviour
         playerList.Remove(id); // Remove the player from the list
         Destroy(go); // Destroy the GameObject
         buffer.Dispose(); // Dispose of the data
+    }
+
+    public static void SendNewBullet()
+    {
+        ByteBuffer buffer = new ByteBuffer(); // Create a new bytebuffer
+
+        buffer.WriteInteger((int)RequestIDs.Client_NewBullet); // Write the requestID of sending movement
+
+        NetworkManager.Send(buffer.ToArray()); // Send
+        buffer.Dispose(); // Dispose of the data
+    }
+
+    public static void HandleNewBullet(ByteBuffer buffer)
+    {
+        string id = buffer.ReadString();
+        GameObject shooter = playerList[id];
+
+        GameObject go = Instantiate(Resources.Load("Prefabs/Bullet", typeof(GameObject)), shooter.transform.position + shooter.transform.up, shooter.transform.rotation) as GameObject;
+        go.GetComponent<Bullet>().SetSource(shooter, shooter.transform.position + shooter.transform.up);
+
+        buffer.Dispose();
+    }
+
+    public static void SendBulletHit(string bulletID, string playerID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+
+        buffer.WriteInteger((int)RequestIDs.Client_BulletHit);
+        buffer.WriteString(bulletID);
+        buffer.WriteString(playerID);
+
+        NetworkManager.Send(buffer.ToArray());
+
+        buffer.Dispose();
+    }
+
+    public static void SendPlayerHit(string playerID, string bulletID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+
+        buffer.WriteInteger((int)RequestIDs.Client_PlayerHit);
+        buffer.WriteString(playerID);
+        buffer.WriteString(bulletID);
+
+        NetworkManager.Send(buffer.ToArray());
+
+        buffer.Dispose();
     }
 }

@@ -10,13 +10,8 @@ public enum RequestIDs
     Server_SendExistingPlayers,
     Server_SendDisconnect,
     Client_RequestPlayersOnline,
-}
-
-
-public enum ClientPackages
-{
-    CPingServer = 1,
-    CBroadcastMessageToServer,
-    CRequestConnectionID,
-    CSendMovement,
+    Client_NewBullet,
+    Server_SendNewBullet,
+    Client_BulletHit,
+    Client_PlayerHit,
 }

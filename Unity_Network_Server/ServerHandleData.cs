@@ -53,7 +53,7 @@ namespace Unity_Network_Server
                         ServerTCP.SetHeader($"We got the following id: {Enum.GetName(typeof(RequestIDs), requestID)}");
                     }
 
-                    HandleRequest(requestID, socket, byteBuffer); // Forward the request, socket and buffer to handle it.
+                    HandleRequest(requestID, ref socket, byteBuffer); // Forward the request, socket and buffer to handle it.
 
                     socket.BeginReceive(ServerTCP.GetBuffer, 0, ServerTCP.GetBuffer.Length, SocketFlags.None, new AsyncCallback(RecieveCallback), socket); // Begin recieving again by calling this method
                 }
@@ -64,7 +64,7 @@ namespace Unity_Network_Server
             }
             else
             {
-                HandleDisconnect(socket); // Call handle disconnect with the socket.
+                HandleDisconnect(ref socket); // Call handle disconnect with the socket.
             }
         }
 
@@ -72,13 +72,13 @@ namespace Unity_Network_Server
         /// Cleanup the disconnected player
         /// </summary>
         /// <param name="socket">Socket of the disconnected player</param>
-        private static void HandleDisconnect(Socket socket)
+        private static void HandleDisconnect(ref Socket socket)
         {
 
-            string id = ServerTCP.FindPlayerBySocket(socket).ID; // Get the id of the player
-            SendDisconnect(socket, id); // Send out to every player that the user disconnects
+            string id = ServerTCP.FindPlayerBySocket(ref socket).ID; // Get the id of the player
+            SendDisconnect(ref socket, id); // Send out to every player that the user disconnects
 
-            ServerTCP.RemoveSocket(socket); // Remove the socket from our list
+            ServerTCP.RemoveSocket(ref socket); // Remove the socket from our list
             ServerTCP.SetHeader($"Client Disconnected: {socket.RemoteEndPoint}"); // Set the header with a message showing that a user disconnected
             socket.Close(); // Close the socket
         }
@@ -89,23 +89,33 @@ namespace Unity_Network_Server
         /// <param name="requestID">ID of the request</param>
         /// <param name="socket">Socket that sent the request</param>
         /// <param name="buffer">The ByteBuffer with the byte[]</param>
-        private static void HandleRequest(int requestID, Socket socket, ByteBuffer buffer)
+        private static void HandleRequest(int requestID, ref Socket socket, ByteBuffer buffer)
         {
             switch (requestID)
             {
                 case ((int)RequestIDs.Client_RequestPlayerID):
-                    HandleRequestPlayerID(socket);
+                    HandleRequestPlayerID(ref socket);
                     buffer.Dispose(); // We don't use the buffer so we need to dispose it.
                     break;
                 case ((int)RequestIDs.Client_SendMovement):
-                    HandlePlayerMovement(socket, buffer);
+                    HandlePlayerMovement(ref socket, buffer);
                     break;
                 case ((int)RequestIDs.Client_RequestPlayersOnline):
-                    HandlePlayersOnline(socket);
+                    HandlePlayersOnline(ref socket);
                     buffer.Dispose(); // We don't use the buffer so we need to dispose it.
                     break;
+                case ((int)RequestIDs.Client_NewBullet):
+                    HandleNewBullet(ref socket);
+                    buffer.Dispose();
+                    break;
+                case ((int)RequestIDs.Client_BulletHit):
+                    HandleBulletHit(buffer);
+                    break;
+                case ((int)RequestIDs.Client_PlayerHit):
+                    HandlePlayerHit(buffer);
+                    break;
                 default:
-                    HandleFalseRequest(socket, requestID);
+                    HandleFalseRequest(ref socket, requestID);
                     buffer.Dispose(); // We don't use the buffer so we need to dispose it.
                     break;
             }
@@ -115,18 +125,18 @@ namespace Unity_Network_Server
         /// A method that get's called when a client requests a player id
         /// </summary>
         /// <param name="socket">Socket of the client</param>
-        private static void HandleRequestPlayerID(Socket socket)
+        private static void HandleRequestPlayerID(ref Socket socket)
         {
             ByteBuffer buffer = new ByteBuffer(); // Create a new ByteBuffer
             buffer.WriteInteger((int)RequestIDs.Server_SendPlayerID); // Write the requestID first
-            buffer.WriteString(ServerTCP.FindPlayerBySocket(socket).ID); // Write the ID as a string.
+            buffer.WriteString(ServerTCP.FindPlayerBySocket(ref socket).ID); // Write the ID as a string.
             socket.Send(buffer.ToArray()); // Send out the ID to the socket.
             buffer.Dispose(); // Dispose of the ByteBuffer
 
             ByteBuffer sendToOtherPlayers = new ByteBuffer(); // Create a new ByteBuffer since we want to send this to the existing players as well
             sendToOtherPlayers.WriteInteger((int)RequestIDs.Server_SendOtherPlayer); // Write the requestID
-            sendToOtherPlayers.WriteString(ServerTCP.FindPlayerBySocket(socket).ID); // Write the players ID
-            ServerTCP.SendToAllBut(socket, sendToOtherPlayers.ToArray()); // Call send to all but the socket given
+            sendToOtherPlayers.WriteString(ServerTCP.FindPlayerBySocket(ref socket).ID); // Write the players ID
+            ServerTCP.SendToAllBut(ref socket, sendToOtherPlayers.ToArray()); // Call send to all but the socket given
             sendToOtherPlayers.Dispose(); // Dispose of the ByteBuffer
         }
 
@@ -134,9 +144,9 @@ namespace Unity_Network_Server
         /// The client wants every player currently online(except themself)
         /// </summary>
         /// <param name="socket">Socket of the player that wants the list</param>
-        private static void HandlePlayersOnline(Socket socket)
+        private static void HandlePlayersOnline(ref Socket socket)
         {
-            List<Player> playerList = new List<Player>(ServerTCP.GetEveryPlayerExceptSocket(socket));
+            List<Player> playerList = new List<Player>(ServerTCP.GetEveryPlayerExceptSocket(ref socket));
 
             if (playerList.Count <= 0)
                 return;
@@ -166,7 +176,7 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">Socket of the player that moved.</param>
         /// <param name="byteBuffer">The ByteBuffer containing the information.</param>
-        private static void HandlePlayerMovement(Socket socket, ByteBuffer byteBuffer)
+        private static void HandlePlayerMovement(ref Socket socket, ByteBuffer byteBuffer)
         {
             // Move Player
             float posX = byteBuffer.ReadFloat(); // X position comes first
@@ -174,17 +184,17 @@ namespace Unity_Network_Server
             float rotation = byteBuffer.ReadFloat(); // Rotatino third
             byteBuffer.Dispose(); // Dispose the data
 
-            ServerTCP.FindPlayerBySocket(socket).SetPlayerPosition(posX, posY, rotation); // Update the players position with the new information
+            ServerTCP.FindPlayerBySocket(ref socket).SetPlayerPosition(posX, posY, rotation); // Update the players position with the new information
 
             ByteBuffer buffer = new ByteBuffer(); // Create a new ByteBuffer since we want to send the movement update to the other players
             buffer.WriteInteger((int)RequestIDs.Server_SendMovement); // Write the requestID
-            buffer.WriteString(ServerTCP.FindPlayerBySocket(socket).ID); // Write the ID of the player that moved
+            buffer.WriteString(ServerTCP.FindPlayerBySocket(ref socket).ID); // Write the ID of the player that moved
 
             buffer.WriteFloat(posX); // Write the X position first
             buffer.WriteFloat(posY); // Write the Y position second
             buffer.WriteFloat(rotation); // Write the rotation third.
 
-            ServerTCP.SendToAllBut(socket, buffer.ToArray()); // Send the playermovement to everyone but the socket
+            ServerTCP.SendToAllBut(ref socket, buffer.ToArray()); // Send the playermovement to everyone but the socket
             buffer.Dispose(); // Dispose the data
         }
 
@@ -194,7 +204,7 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">Socket that sent the request.</param>
         /// <param name="requestID">requestID given.</param>
-        private static void HandleFalseRequest(Socket socket, int requestID)
+        private static void HandleFalseRequest(ref Socket socket, int requestID)
         {
             ByteBuffer buffer = new ByteBuffer(); // Create a new buffer
             buffer.WriteInteger((int)RequestIDs.Server_SendFalseRequest); // Write the requestID
@@ -208,15 +218,38 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">Socket that disconnected.</param>
         /// <param name="id">ID of the disconnected user.</param>
-        private static void SendDisconnect(Socket socket, string id)
+        private static void SendDisconnect(ref Socket socket, string id)
         {
             ByteBuffer buffer = new ByteBuffer(); // Create a new buffer
 
             buffer.WriteInteger((int)RequestIDs.Server_SendDisconnect); // Write the requestID
             buffer.WriteString(id); // Write the ID of the player that disconnected
 
-            ServerTCP.SendToAllBut(socket, buffer.ToArray()); // Send this information to everyone except the socket that disconnected
+            ServerTCP.SendToAllBut(ref socket, buffer.ToArray()); // Send this information to everyone except the socket that disconnected
             buffer.Dispose(); // Dispose of the buffer
+        }
+
+        private static void HandleNewBullet(ref Socket socket)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+
+            buffer.WriteInteger((int)RequestIDs.Server_SendNewBullet);
+            buffer.WriteString(ServerTCP.FindPlayerBySocket(ref socket).ID);
+
+            ServerTCP.SendToAllBut(ref socket, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        private static void HandleBulletHit(ByteBuffer buffer)
+        {
+            //
+            buffer.Dispose();
+        }
+
+        private static void HandlePlayerHit(ByteBuffer buffer)
+        {
+            //
+            buffer.Dispose();
         }
     }
 }

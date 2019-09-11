@@ -16,7 +16,10 @@ namespace Unity_Network_Server
         private float posY;
         private float rotation;
 
+        private string lastBulletHit;
+
         public string ID { get => id; }
+        public string LastBulletHit { get => lastBulletHit; set => lastBulletHit = value; }
 
         public Player(Guid guid)
         {

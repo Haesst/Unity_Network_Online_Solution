@@ -39,8 +39,9 @@ public class PlayerInput : MonoBehaviour
         if (fireTimer <= 0 && Input.GetAxis("Fire1") > 0)
         {
             GameObject go = Instantiate(Resources.Load("Prefabs/Bullet", typeof(GameObject)), transform.position + transform.up, transform.rotation) as GameObject;
-            go.GetComponent<bullet>().SetSource(gameObject, transform.position + transform.up);
+            go.GetComponent<Bullet>()?.SetSource(gameObject, transform.position + transform.up);
             fireTimer = fireHold;
+            HandleClientData.SendNewBullet();
         }
 
         if(fireTimer > 0)

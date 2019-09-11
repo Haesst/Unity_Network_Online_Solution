@@ -2,9 +2,8 @@
 
 public class Player : MonoBehaviour
 {
-    public static Player instance;
 
-    private int connectionID;
+    private string connectionID;
     int health;
     private float posX;
     private float posY;
@@ -12,16 +11,31 @@ public class Player : MonoBehaviour
     private float speed;
 
     public float Speed { get => speed; set => speed = value; }
+    public string ConnectionID { get => connectionID; set => connectionID = value; }
 
-    public Player(int connectionID)
+    public Player(string connectionID)
     {
         this.ConnectionID = connectionID;
     }
 
-    public int ConnectionID { get => connectionID; set => connectionID = value; }
-
-    private void Awake()
+    private void OnCollisionEnter2D(Collision2D collision)
     {
-        instance = this;
+        if(collision.collider.tag == "Bullet")
+        {
+            Debug.Log($"Got hit by: {collision.collider.name}");
+            Destroy(collision.collider.gameObject);
+        }
+        else
+        {
+            Debug.Log(collision.collider.tag);
+        }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.tag == "Bullet")
+        {
+            HandleClientData.SendPlayerHit(collision.GetComponent<Bullet>().BulletID);
+        }
     }
 }

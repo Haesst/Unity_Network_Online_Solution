@@ -218,7 +218,7 @@ public class ByteBuffer : IDisposable
 
     public float ReadFloat(bool peek = true)
     {
-        if (buffer.Count > readPos)
+        if (buffer.Count >= readPos)
         {
             if (bufferUpdate)
             {

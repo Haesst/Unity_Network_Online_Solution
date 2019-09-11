@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class bullet : MonoBehaviour
+public class Bullet : MonoBehaviour
 {
     [SerializeField] private float speed = 20f;
     [SerializeField] private float maxDistance = 2000f;
@@ -9,10 +9,25 @@ public class bullet : MonoBehaviour
     private Vector3 origin;
 
     private bool running = false;
+    private bool isLocal = false;
+
+    private string bulletID;
+
+    private System.Guid guid = System.Guid.NewGuid();
+
+    public string BulletID { get => bulletID; }
+
     public void SetSource(GameObject gameObject, Vector3 origin)
     {
+        this.gameObject.name = guid.ToString();
         shooter = gameObject;
         this.origin = origin;
+
+        if(shooter.GetComponent<Player>()?.ConnectionID == NetworkPlayerManager.ConnectionID)
+        {
+            isLocal = true;
+        }
+
         running = true;
     }
 
@@ -34,9 +49,12 @@ public class bullet : MonoBehaviour
         {
             return;
         }
-        Debug.Log(shooter.name);
-        Debug.Log($"Hit: {collision.transform.parent.name}");
-        collision.transform.parent.gameObject.GetComponent<ParticleSystem>()?.Play();
+
+        if (collision.tag == "Player" && isLocal)
+        {
+            HandleClientData.SendBulletHit(bulletID);
+        }
+
         Destroy(gameObject);
     }
 }

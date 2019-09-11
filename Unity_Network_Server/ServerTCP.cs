@@ -89,7 +89,7 @@ namespace Unity_Network_Server
         /// Remove a socket from the list of connected players
         /// </summary>
         /// <param name="socket">Socket to remove</param>
-        public static void RemoveSocket(Socket socket)
+        public static void RemoveSocket(ref Socket socket)
         {
 
             _clientSockets.Remove(socket);
@@ -115,7 +115,7 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">Socket to search for.</param>
         /// <returns>Player with the socket given or null.</returns>
-        public static Player FindPlayerBySocket(Socket socket)
+        public static Player FindPlayerBySocket(ref Socket socket)
         {
             return _clientSockets[socket];
         }
@@ -125,7 +125,7 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">Socket of the player that we dont want in the list.</param>
         /// <returns>A list of players (List<Players>) where the player with the socket have been removed.</returns>
-        public static List<Player> GetEveryPlayerExceptSocket(Socket socket)
+        public static List<Player> GetEveryPlayerExceptSocket(ref Socket socket)
         {
             List<Player> playerList = new List<Player>(_clientSockets.Values); // Copy the dictionary but use only the values since we want a list
             playerList.Remove(_clientSockets[socket]); // Remove the player with the socket
@@ -150,7 +150,7 @@ namespace Unity_Network_Server
         /// </summary>
         /// <param name="socket">The socket that we don't want to send to.</param>
         /// <param name="buffer">The byte[] that we want to change.</param>
-        public static void SendToAllBut(Socket socket, byte[] buffer)
+        public static void SendToAllBut(ref Socket socket, byte[] buffer)
         {
             List<Socket> playerList = new List<Socket>(_clientSockets.Keys); // Copy a list of sockets from the Dictionary keys
 

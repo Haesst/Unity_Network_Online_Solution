@@ -10,4 +10,8 @@ public enum RequestIDs
     Server_SendExistingPlayers,
     Server_SendDisconnect,
     Client_RequestPlayersOnline,
+    Client_NewBullet,
+    Server_SendNewBullet,
+    Client_BulletHit,
+    Client_PlayerHit,
 }

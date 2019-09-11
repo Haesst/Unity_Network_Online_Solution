@@ -4,6 +4,8 @@ using UnityEngine;
 public class NetworkPlayerManager : MonoBehaviour
 {
     NetworkPlayerManager instance;
+
+    public static string ConnectionID { get; private set; }
     private void Awake()
     {
         instance = this;
@@ -11,7 +13,10 @@ public class NetworkPlayerManager : MonoBehaviour
     public static void InstantiateNewPlayer(string connectionID, int spriteID = 0)
     {
         GameObject go = Instantiate(Resources.Load("Prefabs/Player", typeof(GameObject))) as GameObject;
+        go.GetComponent<Player>().ConnectionID = connectionID;
+        ConnectionID = connectionID;
         go.name = $"Player: {connectionID}";
+        go.tag = "Player";
     }
 
     public static GameObject InstantiateNewOtherPlayer(string connectionID, int spriteID = 0)
