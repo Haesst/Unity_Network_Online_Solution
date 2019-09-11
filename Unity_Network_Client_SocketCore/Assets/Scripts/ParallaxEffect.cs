@@ -7,6 +7,7 @@ public class ParallaxEffect : MonoBehaviour
     private Transform origin;
     private Camera mainCamera;
     private Transform player;
+    private Vector3 originPos;
 
     private float lengthX;
     private float startPosX;
@@ -27,7 +28,7 @@ public class ParallaxEffect : MonoBehaviour
         lengthX = GetComponent<SpriteRenderer>().bounds.size.x;
         lengthY = GetComponent<SpriteRenderer>().bounds.size.y;
 
-        parallaxEffect = 0.8f;
+        //parallaxEffect = 0.8f;
     }
 
     private void FixedUpdate()
@@ -38,13 +39,18 @@ public class ParallaxEffect : MonoBehaviour
         float distX = (mainCamera.transform.position.x * parallaxEffect);
         float distY = (mainCamera.transform.position.y * parallaxEffect);
 
+        if (tempX > startPosX + lengthX)
+        {
+            startPosX += lengthX * 3f;
+        }
+
         transform.position = new Vector3(startPosX + distX, startPosY + distY, transform.position.z);
+        /*
+        if (tempX > startPosX + lengthX) startPosX += lengthX;
+        else if (tempX < startPosX - lengthX) startPosX -= lengthX;
 
-        //if (tempX > startPosX + lengthX) startPosX += lengthX;
-        //else if (tempX < startPosX - lengthX) startPosX -= lengthX;
-
-        //if (tempY > startPosY + lengthY) startPosY += lengthY;
-        //else if (tempY < startPosY - lengthY) startPosY -= lengthY;
+        if (tempY > startPosY + lengthY) startPosY += lengthY;
+        else if (tempY < startPosY - lengthY) startPosY -= lengthY;*/
     }
 
     private void UpdateCameraPosition()

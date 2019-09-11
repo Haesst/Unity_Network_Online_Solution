@@ -166,10 +166,9 @@ namespace Unity_Network_Server_SocketCore
                 else
                 {
                     Console.WriteLine($"playerID: {player.ConnectionID} died!");
-                    player.ResetPlayerData();
-                    
+                    //player = new Player(player.ConnectionID);
                     //TODO: send player is dead
-
+                    player.ResetPlayerData();
                     ServerTCP.PACKET_SendPlayerDied(ref socket, player);
                 }
             }
