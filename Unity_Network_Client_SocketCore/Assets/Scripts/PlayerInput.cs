@@ -25,8 +25,12 @@ public class PlayerInput : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
         Cursor.lockState = CursorLockMode.None;
+<<<<<<< HEAD
         //quitButton = GameObject.Find("Button_Quit");
         //quitButton.SetActive(false);
+=======
+        Cursor.visible = false;
+>>>>>>> a6099d7614302c55d372bbad3ccc87f6802fc495
     }
     private void OnEnable()
     {
