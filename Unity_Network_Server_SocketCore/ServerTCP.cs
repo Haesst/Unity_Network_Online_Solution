@@ -254,5 +254,23 @@ namespace Unity_Network_Server_SocketCore
             SendDataToAll(buffer.ToArray());
             buffer.Dispose();
         }
+
+        // No use at the moment
+        public static void PACKET_SendPlayerDied(ref Socket socket, Player player)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteInteger((int)ServerPackages.Server_SendPlayerDied);
+
+            buffer.WriteInteger(player.ConnectionID);
+
+            buffer.WriteFloat(player.PosX);
+            buffer.WriteFloat(player.PosY);
+            buffer.WriteFloat(player.Rotation);
+
+            buffer.WriteInteger(player.Health);
+
+            SendDataToAll(buffer.ToArray());
+            buffer.Dispose();
+        }
     }
 }

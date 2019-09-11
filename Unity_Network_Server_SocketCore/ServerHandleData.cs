@@ -155,7 +155,7 @@ namespace Unity_Network_Server_SocketCore
             Socket tempSocket = ServerTCP.GetSocketByConnectionID(playerID);
             Player player = ServerTCP._clientSockets[tempSocket].player;
 
-            if (player.IsAlive && player.BulletHitId == bulletID)
+            if (player.BulletHitId == bulletID)
             {
                 if (player.Health > 1)
                 {
@@ -165,11 +165,12 @@ namespace Unity_Network_Server_SocketCore
                 }
                 else
                 {
-                    player.IsAlive = false;
-                    player.Health--;
-                    ServerTCP.PACKET_SendPlayerHealth(ref socket, player.Health);
-                    //Console.WriteLine($"playerID: {player.ConnectionID} died!");
+                    Console.WriteLine($"playerID: {player.ConnectionID} died!");
+                    player.ResetPlayerData();
+                    
                     //TODO: send player is dead
+
+                    ServerTCP.PACKET_SendPlayerDied(ref socket, player);
                 }
             }
         }

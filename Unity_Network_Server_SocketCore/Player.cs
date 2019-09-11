@@ -15,8 +15,7 @@
         public Player(int connectionID)
         {
             ConnectionID = connectionID;
-            Health = 100;
-            IsAlive = true;
+            Health = 10;
         }
         public float PosX { get => posX; }
         public float PosY { get => posY; }
@@ -25,13 +24,20 @@
         public int SpriteID { get => spriteID; set => spriteID = value; }
         public int BulletHitId { get => bulletHitId; set => bulletHitId = value; }
         public int Health { get => health; set => health = value; }
-        public bool IsAlive { get => isAlive; set => isAlive = value; }
 
         public void SetPlayerPosition(float posX, float posY, float rotation)
         {
             this.posX = posX;
             this.posY = posY;
             this.rotation = rotation;
+        }
+
+        public void ResetPlayerData()
+        {
+            health = 10;
+            posX = 0;
+            posY = 0;
+            rotation = 0;
         }
     }
 }

@@ -10,6 +10,7 @@ public enum ServerPackages
     Server_SendRemovePlayer,
     Server_SendNewProjectile,
     Server_SendPlayerHealth,
+    Server_SendPlayerDied,
 }
 
 public enum ClientPackages

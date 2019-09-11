@@ -19,6 +19,7 @@ public class ClientHandleData
         packetList.Add((int)ServerPackages.Server_SendRemovePlayer, HandleRemovePlayer);
         packetList.Add((int)ServerPackages.Server_SendNewProjectile, HandleNewProjectile);
         packetList.Add((int)ServerPackages.Server_SendPlayerHealth, HandlePlayerHealth);
+        packetList.Add((int)ServerPackages.Server_SendPlayerDied, HandlePlayerDeath);
     }
     public static void HandleData(byte[] data)
     {
@@ -185,5 +186,26 @@ public class ClientHandleData
             player.Health = health;
             NetPlayer.healthText.text = $"Health: {health}";
         }
+    }
+
+    private static void HandlePlayerDeath(byte[] data)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteBytes(data);
+        int packageID = buffer.ReadInteger();
+
+        int connectionID = buffer.ReadInteger();
+        float posX = buffer.ReadFloat();
+        float posY = buffer.ReadFloat();
+        float rotation = buffer.ReadFloat();
+        int health = buffer.ReadInteger();
+
+        buffer.Dispose();
+
+        GameObject player = NetPlayer.players[connectionID];
+        player.transform.position = new Vector3(posX, posY, player.transform.position.z);
+        player.transform.rotation = new Quaternion(0, 0, rotation, 0);
+        player.GetComponent<Player>().Health = health;
+        NetPlayer.healthText.text = $"Health: {health}";
     }
 }

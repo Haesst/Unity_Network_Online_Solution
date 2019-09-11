@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerInput : MonoBehaviour
 {
@@ -15,6 +16,7 @@ public class PlayerInput : MonoBehaviour
     private Camera mainCamera;
     private CursorLockMode oldLockState;
     private bool showCursor;
+    private GameObject quitButton;
 
     private void Awake()
     {
@@ -23,6 +25,8 @@ public class PlayerInput : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
         Cursor.lockState = CursorLockMode.None;
+        //quitButton = GameObject.Find("Button_Quit");
+        //quitButton.SetActive(false);
     }
     private void OnEnable()
     {
@@ -46,12 +50,14 @@ public class PlayerInput : MonoBehaviour
                     Cursor.visible = false;
                     Cursor.lockState = CursorLockMode.Locked;
                     showCursor = false;
+                    //quitButton.SetActive(false);
                 }
                 else
                 {
                     Cursor.visible = true;
                     Cursor.lockState = CursorLockMode.None;
                     showCursor = true;
+                    //quitButton.SetActive(true);
                 }
             }
 

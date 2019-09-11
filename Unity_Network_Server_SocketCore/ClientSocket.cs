@@ -28,18 +28,22 @@ namespace Unity_Network_Server_SocketCore
             try
             {
                 Socket socket = (Socket)AR.AsyncState;
-                int received = socket.EndReceive(AR);
-                byte[] dataBuffer = new byte[received];
-                Array.Copy(_buffer, dataBuffer, received);
-                try
+                if (socket.Connected)
                 {
-                    ServerHandleData.HandleData(socket, dataBuffer);
-                    _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
+                    int received = socket.EndReceive(AR);
+                    byte[] dataBuffer = new byte[received];
+                    Array.Copy(_buffer, dataBuffer, received);
+                    try
+                    {
+                        ServerHandleData.HandleData(socket, dataBuffer);
+                        _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
+                    }
+                    catch (Exception)
+                    {
+                        CloseConnection();
+                    }
                 }
-                catch (Exception)
-                {
-                    CloseConnection();
-                }
+                
             }
             catch (Exception ex)
             {
