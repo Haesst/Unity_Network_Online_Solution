@@ -13,6 +13,8 @@ public class NetworkManager : MonoBehaviour
     public static Text pingMs;
     public static Stopwatch elapsedMsTime;
 
+    public GameObject quitButton;
+
     private void Awake()
     {
         instance = this;
@@ -21,6 +23,8 @@ public class NetworkManager : MonoBehaviour
         isConnected = false;
         pingMs = GameObject.Find("Ping").GetComponentInChildren<Text>();
         elapsedMsTime = new Stopwatch();
+        quitButton = GameObject.Find("Button_Quit");
+        quitButton.SetActive(false);
         DontDestroyOnLoad(this);
         UnityThread.initUnityThread();
 

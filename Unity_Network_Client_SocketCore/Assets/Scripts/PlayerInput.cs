@@ -16,7 +16,6 @@ public class PlayerInput : MonoBehaviour
     private Camera mainCamera;
     private CursorLockMode oldLockState;
     private bool showCursor;
-    private GameObject quitButton;
 
     private void Awake()
     {
@@ -24,19 +23,40 @@ public class PlayerInput : MonoBehaviour
         // Set the rigidbody
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
-        Cursor.lockState = CursorLockMode.None;
-        //quitButton = GameObject.Find("Button_Quit");
-        //quitButton.SetActive(false);
-        Cursor.visible = false;
+        //Cursor.lockState = CursorLockMode.None;
+        //Cursor.visible = false;
     }
     private void OnEnable()
     {
-        oldLockState = Cursor.lockState;
-        Cursor.lockState = CursorLockMode.Locked;
+        //oldLockState = Cursor.lockState;
+        //Cursor.lockState = CursorLockMode.Locked;
     }
     private void OnDisable()
     {
-        Cursor.lockState = oldLockState;
+        //Cursor.lockState = oldLockState;
+    }
+
+    private void FixedUpdate()
+    {
+        if (connectionID == NetPlayer.connectionID)
+        {
+            if (Input.GetAxis("Mouse X") != 0 && showCursor == false)
+            {
+                PlayerRotate();
+            }
+            if (Input.GetAxis("Fire2") != 0 && showCursor == false)
+            {
+                PlayerThrust();
+            }
+
+            if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
+            {
+                ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
+                lastRotation = transform.rotation;
+                lastPosition = transform.position;
+                UpdateCameraPosition();
+            }
+        }
     }
 
     private void LateUpdate()
@@ -48,39 +68,23 @@ public class PlayerInput : MonoBehaviour
             {
                 if (showCursor)
                 {
-                    Cursor.visible = false;
-                    Cursor.lockState = CursorLockMode.Locked;
-                    showCursor = false;
-                    //quitButton.SetActive(false);
+                    //Cursor.visible = false;
+                    //Cursor.lockState = CursorLockMode.Locked;
+                    //showCursor = false;
+                    NetworkManager.instance.quitButton.SetActive(false);
                 }
                 else
                 {
-                    Cursor.visible = true;
-                    Cursor.lockState = CursorLockMode.None;
-                    showCursor = true;
-                    //quitButton.SetActive(true);
+                    //Cursor.visible = true;
+                    //Cursor.lockState = CursorLockMode.None;
+                    //showCursor = true;
+                    NetworkManager.instance.quitButton.SetActive(true);
                 }
             }
 
-            if (Input.GetAxis("Mouse X") != 0 && showCursor == false)
-            {
-                PlayerRotate();
-            }
-            if (Input.GetAxis("Fire2") != 0 && showCursor == false)
-            {
-                PlayerThrust();
-            }
             if (Input.GetButtonDown("Fire1") && showCursor == false)
             {
                 NetPlayer.InstantiateNewProjectile(connectionID);
-            }
-
-            if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
-            {
-                ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
-                lastRotation = transform.rotation;
-                lastPosition = transform.position;
-                UpdateCameraPosition();
             }
         }
     }
@@ -93,6 +97,7 @@ public class PlayerInput : MonoBehaviour
 
     private void PlayerRotate()
     {
+        //TODO: Make the Player rotate accordingly to the mouse position
         float rotation = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
         transform.Rotate(0, 0, -rotation);
     }

@@ -80,7 +80,7 @@ public class NetPlayer : MonoBehaviour
         int bulletID = GetPositiveHashCode();
         Transform parent = players[connectionID].transform; // who shot the projectile
 
-        ClientTCP.PACKAGE_SendProjectile(bulletID); // pass in connectionID aswell when done whit the local stuff, to get reference who fire to sync on other clients
+        
 
         GameObject bullet = Instantiate(bulletPrefab);
         bullet.name = $"Bullet | {bulletID}";
@@ -91,7 +91,13 @@ public class NetPlayer : MonoBehaviour
         projectileData.bulletID = bulletID;
         projectileData.parent = parent;
 
+        if (projectiles.ContainsKey(bulletID))
+        {
+            bulletID = GetPositiveHashCode();
+        }
+
         projectiles.Add(bulletID, bullet);
+        ClientTCP.PACKAGE_SendProjectile(bulletID);
     }
 
     public static void InstantiateNewProjectile(int connectionID, int bulletID)

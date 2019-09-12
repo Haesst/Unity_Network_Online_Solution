@@ -11,6 +11,7 @@ public enum ServerPackages
     Server_SendNewProjectile,
     Server_SendPlayerHealth,
     Server_SendPlayerDied,
+
 }
 
 public enum ClientPackages
@@ -22,5 +23,5 @@ public enum ClientPackages
     Client_SendMovement,
     Client_SendProjectile,
     Client_SendProjectileHit,
-    Client_SendPlayerGotHit
+    Client_SendPlayerGotHit,
 }
