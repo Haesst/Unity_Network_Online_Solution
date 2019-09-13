@@ -98,8 +98,14 @@ public class PlayerInput : MonoBehaviour
     private void PlayerRotate()
     {
         //TODO: Make the Player rotate accordingly to the mouse position
-        float rotation = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-        transform.Rotate(0, 0, -rotation);
+        Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        transform.LookAt(mousePosition, new Vector3(0, 0, transform.forward.z));
+        Vector3 temp = transform.rotation.eulerAngles;
+        temp = Vector3.forward * temp.z;
+        transform.rotation = Quaternion.Euler(-temp);
+
+        //float rotation = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
+        //transform.Rotate(0, 0, -rotation);
     }
 
     private void UpdateCameraPosition()
