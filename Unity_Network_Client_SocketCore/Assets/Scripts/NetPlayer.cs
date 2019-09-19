@@ -15,6 +15,7 @@ public class NetPlayer : MonoBehaviour
     public static int onlinePlayerCount;
     public static GameObject bulletPrefab;
     public static GameObject playerPrefab;
+    public static GameObject crossair;
 
     public static Text healthText;
 
@@ -24,14 +25,21 @@ public class NetPlayer : MonoBehaviour
         bulletPrefab = Resources.Load("Prefabs/Bullet") as GameObject;
         playerPrefab = Resources.Load("Prefabs/Player") as GameObject;
         healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
+        crossair = Instantiate(Resources.Load("Prefabs/Crossair") as GameObject);
     }
 
     private void FixedUpdate()
     {
+        if (!NetworkManager.instance.isConnected) { return; }
         // If there is no connectionID set request a connectionID from the server
         if (connectionID <= 0) { ClientTCP.PACKAGE_RequestConnectionID(); }
         if (connectionID != 0 && players.Count < onlinePlayerCount) { ClientTCP.PACKAGE_RequestWorldPlayers(players[connectionID].GetComponent<Player>().SpriteID); }
+
+        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        mousePos.z = 0;
+        crossair.transform.position = mousePos;
     }
+
     public static void SetConnectionID(int id)
     {
         if (connectionID != 0) { return; }
@@ -59,6 +67,8 @@ public class NetPlayer : MonoBehaviour
 
         players.Add(connectionID, go);
         players[connectionID].GetComponentInChildren<Player>().SpriteID = randomSprite;
+        //TODO: Set the player name to the player class
+        ClientTCP.PACKAGE_SendPlayerData(connectionID);
         ClientTCP.PACKAGE_RequestWorldPlayers(randomSprite);
     }
 
@@ -80,7 +90,7 @@ public class NetPlayer : MonoBehaviour
         int bulletID = GetPositiveHashCode();
         Transform parent = players[connectionID].transform; // who shot the projectile
 
-        
+
 
         GameObject bullet = Instantiate(bulletPrefab);
         bullet.name = $"Bullet | {bulletID}";

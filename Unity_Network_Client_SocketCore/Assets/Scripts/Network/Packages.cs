@@ -24,4 +24,5 @@ public enum ClientPackages
     Client_SendProjectile,
     Client_SendProjectileHit,
     Client_SendPlayerGotHit,
+    Client_SendPlayerData,
 }

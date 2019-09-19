@@ -21,7 +21,9 @@ namespace Unity_Network_Server_SocketCore
             packetList.Add((int)ClientPackages.Client_SendProjectile, HandleNewProjectile);
             packetList.Add((int)ClientPackages.Client_SendProjectileHit, HandleProjectileHit);
             packetList.Add((int)ClientPackages.Client_SendPlayerGotHit, HandlePlayerGotHit);
+            packetList.Add((int)ClientPackages.Client_SendPlayerData, HandlePlayerData);
         }
+
 
         public static void HandleData(Socket socket, byte[] data)
         {
@@ -172,6 +174,21 @@ namespace Unity_Network_Server_SocketCore
                     ServerTCP.PACKET_SendPlayerDied(ref socket, player);
                 }
             }
+        }
+        private static void HandlePlayerData(Socket socket, byte[] data)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.WriteBytes(data);
+            int packageID = buffer.ReadInteger();
+
+            string name = buffer.ReadString();
+            int spriteID = buffer.ReadInteger();    
+
+            buffer.Dispose();
+
+            Player player = ServerTCP._clientSockets[socket].player;
+            player.Name = name;
+            player.SpriteID = spriteID;
         }
     }
 }

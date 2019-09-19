@@ -11,6 +11,7 @@
         private float rotation;
         private int bulletHitId;
         private bool isAlive;
+        private string name;
 
         public Player(int connectionID)
         {
@@ -24,6 +25,7 @@
         public int SpriteID { get => spriteID; set => spriteID = value; }
         public int BulletHitId { get => bulletHitId; set => bulletHitId = value; }
         public int Health { get => health; set => health = value; }
+        public string Name { get => name; set => name = value; }
 
         public void SetPlayerPosition(float posX, float posY, float rotation)
         {

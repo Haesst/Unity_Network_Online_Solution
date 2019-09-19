@@ -3,12 +3,12 @@ using UnityEngine.UI;
 
 public class PlayerInput : MonoBehaviour
 {
-    [SerializeField] float rotationSpeed = 0.1f;
-    [SerializeField] float shipSpeed = 1000f;
-    [SerializeField] float velocityLimit = 5f;
+    public static PlayerInput instance;
+
+    float shipSpeed = 1000f;
+    float velocityLimit = 5f;
     public int connectionID;
 
-    public static PlayerInput instance;
     private Rigidbody2D rb;
     private Vector3 lastPosition;
     private Quaternion lastRotation;
@@ -20,30 +20,20 @@ public class PlayerInput : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        // Set the rigidbody
         rb = GetComponent<Rigidbody2D>();
         mainCamera = Camera.main;
-        //Cursor.lockState = CursorLockMode.None;
-        //Cursor.visible = false;
-    }
-    private void OnEnable()
-    {
-        //oldLockState = Cursor.lockState;
-        //Cursor.lockState = CursorLockMode.Locked;
-    }
-    private void OnDisable()
-    {
-        //Cursor.lockState = oldLockState;
     }
 
     private void FixedUpdate()
     {
         if (connectionID == NetPlayer.connectionID)
         {
-            if (Input.GetAxis("Mouse X") != 0 && showCursor == false)
+
+            if (/*Input.GetAxis("Mouse X") != 0 && */ showCursor == false)
             {
                 PlayerRotate();
             }
+
             if (Input.GetAxis("Fire2") != 0 && showCursor == false)
             {
                 PlayerThrust();
@@ -68,17 +58,17 @@ public class PlayerInput : MonoBehaviour
             {
                 if (showCursor)
                 {
-                    //Cursor.visible = false;
-                    //Cursor.lockState = CursorLockMode.Locked;
-                    //showCursor = false;
+                    Cursor.visible = false;
+                    showCursor = false;
                     NetworkManager.instance.quitButton.SetActive(false);
+                    NetPlayer.crossair.SetActive(true);
                 }
                 else
                 {
-                    //Cursor.visible = true;
-                    //Cursor.lockState = CursorLockMode.None;
-                    //showCursor = true;
+                    Cursor.visible = true;
+                    showCursor = true;
                     NetworkManager.instance.quitButton.SetActive(true);
+                    NetPlayer.crossair.SetActive(false);
                 }
             }
 
@@ -97,15 +87,9 @@ public class PlayerInput : MonoBehaviour
 
     private void PlayerRotate()
     {
-        //TODO: Make the Player rotate accordingly to the mouse position
         Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        transform.LookAt(mousePosition, new Vector3(0, 0, transform.forward.z));
-        Vector3 temp = transform.rotation.eulerAngles;
-        temp = Vector3.forward * temp.z;
-        transform.rotation = Quaternion.Euler(-temp);
-
-        //float rotation = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
-        //transform.Rotate(0, 0, -rotation);
+        float angle = Mathf.Atan2(transform.position.y - mousePosition.y, transform.position.x - mousePosition.x) * Mathf.Rad2Deg;
+        transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle + 90f));
     }
 
     private void UpdateCameraPosition()

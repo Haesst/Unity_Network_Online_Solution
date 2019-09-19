@@ -133,4 +133,17 @@ public class ClientTCP
         SendData(buffer.ToArray());
         buffer.Dispose();
     }
+
+    public static void PACKAGE_SendPlayerData(int connectionID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.WriteInteger((int)ClientPackages.Client_SendPlayerData);
+
+        Player player = NetPlayer.players[connectionID].GetComponent<Player>();
+        buffer.WriteString(player.Name);
+        buffer.WriteInteger(player.SpriteID);
+
+        SendData(buffer.ToArray());
+        buffer.Dispose();
+    }
 }
