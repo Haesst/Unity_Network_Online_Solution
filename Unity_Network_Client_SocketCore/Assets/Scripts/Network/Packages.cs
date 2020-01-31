@@ -3,8 +3,8 @@ public enum ServerPackages
 {
     Server_PingClient = 1,
     Server_SendChatMessageClient,
-    Server_SendConnectionID,
-    Server_SendNewPlayerToWorldPlayers,
+    Server_SendGuid,
+    Server_SendNewPlayerToWorld,
     Server_SendWorldPlayersToNewPlayer,
     Server_SendPlayerMovement,
     Server_SendRemovePlayer,
@@ -18,7 +18,7 @@ public enum ClientPackages
 {
     Client_PingServer = 1,
     Client_ReceiveMessageFromClient,
-    Client_RequestConnectionID,
+    Client_RequestGuid,
     Client_RequestWorldPlayers,
     Client_SendMovement,
     Client_SendProjectile,

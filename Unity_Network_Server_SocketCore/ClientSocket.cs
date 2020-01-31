@@ -5,22 +5,20 @@ namespace Unity_Network_Server_SocketCore
 {
     class ClientSocket
     {
-        public int connectionID;
-        public byte[] _buffer;
-        private Socket _socket;
-        public bool isConnected;
+        public readonly Socket socket;
+        public Guid id;
+        public byte[] buffer;
         public Player player;
 
-        public ClientSocket(ref Socket socket, int connectionID)
+        public ClientSocket(ref Socket socket, Guid id)
         {
-            this.connectionID = connectionID;
-            _socket = socket;
-            _socket.NoDelay = true;
-            _buffer = new byte[4096];
-            _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
-            Console.WriteLine($"Incoming connection from {_socket.RemoteEndPoint.ToString()} | connectionID: {connectionID}");
-            isConnected = true;
-            player = new Player(connectionID);
+            this.id = id;
+            this.socket = socket;
+            this.socket.NoDelay = true;
+            buffer = new byte[4096];
+            this.socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), this.socket);
+            Console.WriteLine($"Incoming connection from {socket.RemoteEndPoint.ToString()} | connectionID: {id}");
+            player = new Player(id);
         }
 
         private void ReceiveCallback(IAsyncResult AR)
@@ -32,18 +30,11 @@ namespace Unity_Network_Server_SocketCore
                 {
                     int received = socket.EndReceive(AR);
                     byte[] dataBuffer = new byte[received];
-                    Array.Copy(_buffer, dataBuffer, received);
-                    try
-                    {
-                        ServerHandleData.HandleData(socket, dataBuffer);
-                        _socket.BeginReceive(_buffer, 0, _buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), _socket);
-                    }
-                    catch (Exception)
-                    {
-                        CloseConnection();
-                    }
+                    Array.Copy(buffer, dataBuffer, received);
+                    ServerHandleData.HandleData(ref socket, ref dataBuffer);
+                    this.socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), this.socket);
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -58,9 +49,8 @@ namespace Unity_Network_Server_SocketCore
 
         private void CloseConnection()
         {
-            isConnected = false;
-            Console.WriteLine($"User disconnected : {_socket.RemoteEndPoint.ToString()} | ID: {connectionID}");
-            ServerTCP.RemoveClientObject(ref _socket);
+            Console.WriteLine($"User disconnected : {socket.RemoteEndPoint.ToString()} | ID: {id}");
+            ServerTCP.RemoveClientObject(socket);
         }
     }
 }

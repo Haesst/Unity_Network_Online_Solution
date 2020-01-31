@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class PlayerInput : MonoBehaviour
@@ -7,7 +8,7 @@ public class PlayerInput : MonoBehaviour
 
     float shipSpeed = 1000f;
     float velocityLimit = 5f;
-    public int connectionID;
+    public Guid id;
 
     private Rigidbody2D rb;
     private Vector3 lastPosition;
@@ -26,9 +27,8 @@ public class PlayerInput : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (connectionID == NetPlayer.connectionID)
+        if (id == NetPlayer.Id)
         {
-
             if (/*Input.GetAxis("Mouse X") != 0 && */ showCursor == false)
             {
                 PlayerRotate();
@@ -52,7 +52,7 @@ public class PlayerInput : MonoBehaviour
     private void LateUpdate()
     {
         // Make sure to only be able to move your own spaceship
-        if (connectionID == NetPlayer.connectionID)
+        if (id == NetPlayer.Id)
         {
             if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -74,7 +74,7 @@ public class PlayerInput : MonoBehaviour
 
             if (Input.GetButtonDown("Fire1") && showCursor == false)
             {
-                NetPlayer.InstantiateNewProjectile(connectionID);
+                NetPlayer.InstantiateNewProjectile(id);
             }
         }
     }
@@ -94,7 +94,7 @@ public class PlayerInput : MonoBehaviour
 
     private void UpdateCameraPosition()
     {
-        if (connectionID == NetPlayer.connectionID)
+        if (id == NetPlayer.Id)
         {
             mainCamera.transform.position = new Vector3(transform.position.x, transform.position.y, mainCamera.transform.position.z);
         }

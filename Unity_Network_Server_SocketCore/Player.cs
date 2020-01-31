@@ -1,9 +1,11 @@
-﻿namespace Unity_Network_Server_SocketCore
+﻿using System;
+
+namespace Unity_Network_Server_SocketCore
 {
     public class Player
     {
         //TODO: Store all players info here
-        private int connectionID;
+        private Guid id;
         private int spriteID;
         private int health;
         private float posX;
@@ -13,15 +15,15 @@
         private bool isAlive;
         private string name;
 
-        public Player(int connectionID)
+        public Player(Guid id)
         {
-            ConnectionID = connectionID;
+            this.id = id;
             Health = 10;
         }
         public float PosX { get => posX; }
         public float PosY { get => posY; }
         public float Rotation { get => rotation; }
-        public int ConnectionID { get => connectionID; set => connectionID = value; }
+        public Guid Id { get => id; set => id = value; }
         public int SpriteID { get => spriteID; set => spriteID = value; }
         public int BulletHitId { get => bulletHitId; set => bulletHitId = value; }
         public int Health { get => health; set => health = value; }

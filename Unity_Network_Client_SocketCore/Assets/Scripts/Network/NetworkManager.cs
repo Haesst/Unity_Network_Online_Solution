@@ -9,7 +9,7 @@ public class NetworkManager : MonoBehaviour
 
     [SerializeField] private string host; //Server IpAdress
     [SerializeField] private int port;  //Server Port
-    public bool isConnected;
+    public static bool isConnected;
     [HideInInspector] public static int connectionID;
     public static Text pingMs;
     public static Stopwatch elapsedMsTime;
@@ -20,7 +20,7 @@ public class NetworkManager : MonoBehaviour
     private void Awake()
     {
         instance = this;
-        host = "10.20.2.104";
+        host = "127.0.0.1";
         port = 7171;
         isConnected = false;
         pingMs = GameObject.Find("Ping").GetComponentInChildren<Text>();
@@ -52,7 +52,11 @@ public class NetworkManager : MonoBehaviour
             selectName.transform.GetChild(0).GetChild(1).GetComponent<Text>().color = new Color(50, 50, 50);
         }
 
-        ClientTCP.Connect(host, port);
+        do
+        {
+            ClientTCP.Connect(host, port);
+        } while (!isConnected);
+
         quitButton.SetActive(false);
         selectName.SetActive(false);
         Cursor.visible = false;

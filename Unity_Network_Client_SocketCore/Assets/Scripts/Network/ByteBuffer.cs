@@ -44,44 +44,44 @@ public class ByteBuffer : IDisposable
     #region Write Data
 
     #region Numbers
-    public void WriteByte(byte input)
+    public void Write(byte input)
     {
         buffer.Add(input); // Since this is a byte list we can just enter the input
         bufferUpdate = true; // Set update to true
     }
 
-    public void WriteBytes(byte[] input)
+    public void Write(byte[] input)
     {
         buffer.AddRange(input); // Since we're adding an array of bytes we need to use AddRange
         bufferUpdate = true; // Set update to true
     }
 
-    public void WriteShort(short input)
+    public void Write(short input)
     {
         buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
         bufferUpdate = true; // Set update to true
     }
 
-    public void WriteInteger(int input)
+    public void Write(int input)
     {
         buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
         bufferUpdate = true; // Set update to true
     }
 
-    public void WriteLong(long input)
+    public void Write(long input)
     {
         buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
         bufferUpdate = true; // Set update to true
     }
 
-    public void WriteFloat(float input)
+    public void Write(float input)
     {
         buffer.AddRange(BitConverter.GetBytes(input)); // Convert the input with BitConverter and then add the range to the buffer(BitConverter converts the input to an array)
         bufferUpdate = true; // Set update to true
     }
     #endregion Numbers
 
-    public void WriteString(string input)
+    public void Write(string input)
     {
         buffer.AddRange(BitConverter.GetBytes(input.Length)); // Add the string length to the buffer
         buffer.AddRange(Encoding.ASCII.GetBytes(input)); // Convert the input string to bytes with Encoding.ASCII and then add it to the buffer

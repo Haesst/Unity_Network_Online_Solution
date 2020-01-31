@@ -3613,9 +3613,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   host: 
   port: 0
-  isConnected: 0
   quitButton: {fileID: 426097032}
-  selectName: {fileID: 0}
+  selectName: {fileID: 1921460677}
 --- !u!4 &1490747610
 Transform:
   m_ObjectHideFlags: 0
@@ -3642,19 +3641,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cff9a459b0e25c948af82ecbda926c87, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sprites:
-  - {fileID: -6877657737085974523, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: 8383162673023287823, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: 3118750061902332518, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -797168720777067150, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -7653039100333099308, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -8084874238274840218, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -4648857032059535507, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: 8119249936409394056, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -1986511610909899991, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: -1369133203827550807, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: 4402405062159405059, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
-  - {fileID: 4107702307641232175, guid: 827331ca04e49764ead658c67c7ee3e7, type: 3}
 --- !u!1 &1524320844
 GameObject:
   m_ObjectHideFlags: 0

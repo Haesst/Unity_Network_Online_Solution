@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class ClientHandleData
 {
-    public static Dictionary<int, Action<byte[]>> packetList;
+    public static Dictionary<int, Action<ByteBuffer>> packetList;
 
     public static void InitializePacketList()
     {
-        packetList = new Dictionary<int, Action<byte[]>>();
+        packetList = new Dictionary<int, Action<ByteBuffer>>();
         //Add server packets here
         packetList.Add((int)ServerPackages.Server_PingClient, HandlePingFromServer);
         packetList.Add((int)ServerPackages.Server_SendChatMessageClient, HandleChatMsgFromServer);
-        packetList.Add((int)ServerPackages.Server_SendConnectionID, HandleRequestConnectionID);
-        packetList.Add((int)ServerPackages.Server_SendNewPlayerToWorldPlayers, HandleNewPlayerToWorldPlayers);
+        packetList.Add((int)ServerPackages.Server_SendGuid, HandleRequestGuid);
+        packetList.Add((int)ServerPackages.Server_SendNewPlayerToWorld, HandleNewPlayerToWorld);
         packetList.Add((int)ServerPackages.Server_SendWorldPlayersToNewPlayer, HandleWorldPlayersToNewPlayer);
         packetList.Add((int)ServerPackages.Server_SendPlayerMovement, HandlePlayerMovement);
         packetList.Add((int)ServerPackages.Server_SendRemovePlayer, HandleRemovePlayer);
@@ -21,191 +21,172 @@ public class ClientHandleData
         packetList.Add((int)ServerPackages.Server_SendPlayerHealth, HandlePlayerHealth);
         packetList.Add((int)ServerPackages.Server_SendPlayerDied, HandlePlayerDeath);
     }
-    public static void HandleData(byte[] data)
+    public static void HandleData(ref byte[] data)
     {
-        Action<byte[]> packet;
+        Action<ByteBuffer> packet;
         ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
+        buffer.Write(data);
         int packageID = buffer.ReadInteger();
 
         if (packetList.TryGetValue(packageID, out packet))
         {
-            packet.Invoke(data);
+            packet.Invoke(buffer);
         }
+        buffer.Dispose();
     }
-    private static void HandlePingFromServer(byte[] data)
+    private static void HandlePingFromServer(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
         // get the player amount each ping, should this be a different package?
-        NetPlayer.onlinePlayerCount = buffer.ReadInteger();
+        //NetPlayer.onlinePlayerCount = data.ReadInteger();
 
-        buffer.Dispose();
-
-        if (NetworkManager.instance.isConnected == false)
-        {
-            NetworkManager.instance.isConnected = true;
-        }
         NetworkManager.elapsedMsTime.Stop();
         //if (NetworkManager.pingMs.color != Color.white) { NetworkManager.pingMs.color = Color.white; }
         if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 100) { NetworkManager.pingMs.color = Color.red; }
-        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 40) { NetworkManager.pingMs.color = Color.yellow; }
-        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds < 40) { NetworkManager.pingMs.color = Color.green; }
+        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 40) { NetworkManager.pingMs.color = Color.yellow; }
+        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds < 40) { NetworkManager.pingMs.color = Color.green; }
         NetworkManager.pingMs.text = $"Ping: {NetworkManager.elapsedMsTime.ElapsedMilliseconds}ms";
-        //Debug.Log("You got a ping from the server, client is sending a ping back to the server.");
-        ClientTCP.PACKAGE_PingToServer();
+        //ClientTCP.PACKAGE_PingToServer();
+        data.Dispose();
 
     }
-    private static void HandleChatMsgFromServer(byte[] data)
+    private static void HandleChatMsgFromServer(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
 
-        string message = buffer.ReadString();
+        string message = data.ReadString();
 
-        buffer.Dispose();
+        data.Dispose();
 
         //ChatText.instance.RecieveChatMessage(message, connectionID);
     }
 
-    private static void HandleRequestConnectionID(byte[] data)
+    private static void HandleRequestGuid(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
-        buffer.Dispose();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+
+        NetPlayer.SetConnectionID(id);
 
         //Instantiate a new local player to the game
-        NetPlayer.instance.InstantiateNewPlayer(connectionID, 0);
-
-        //Assign the connectionID to different classes
-        NetPlayer.SetConnectionID(connectionID);
-        PlayerInput.instance.connectionID = connectionID;
+        NetPlayer.InstantiateNewPlayer(id);
+        data.Dispose();
     }
 
-    private static void HandleNewPlayerToWorldPlayers(byte[] data)
+    private static void HandleNewPlayerToWorld(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
-        int spriteID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        int spriteID = data.ReadInteger();
+        int health = data.ReadInteger();
+        string name = data.ReadString();
+        float x = data.ReadFloat();
+        float y = data.ReadFloat();
+        float rotation = data.ReadFloat();
 
-        buffer.Dispose();
-
-        NetPlayer.instance.InstantiateNewPlayer(connectionID, spriteID);
+        NetPlayer.instance.InstantiateNewPlayerAtPosition(id, x, y, rotation, name, spriteID);
+        data.Dispose();
     }
 
-    private static void HandleWorldPlayersToNewPlayer(byte[] data)
+    private static void HandleWorldPlayersToNewPlayer(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
-
-        int playersOnline = buffer.ReadInteger();
+        int playersOnline = data.ReadInteger();
         for (int i = 0; i < playersOnline; i++)
         {
-            int connectionID = buffer.ReadInteger();
-            float x = buffer.ReadFloat();
-            float y = buffer.ReadFloat();
-            float rotation = buffer.ReadFloat();
-            int spriteID = buffer.ReadInteger();
-            NetPlayer.instance.InstantiateNewPlayerAtPosition(connectionID, x, y, rotation, spriteID);
+            int length = data.ReadInteger();
+            byte[] guidBytes = data.ReadBytes(length);
+            Guid id = new Guid(guidBytes);
+            float x = data.ReadFloat();
+            float y = data.ReadFloat();
+            float rotation = data.ReadFloat();
+            int spriteID = data.ReadInteger();
+            string name = data.ReadString();
+            NetPlayer.instance.InstantiateNewPlayerAtPosition(id, x, y, rotation, name, spriteID);
+
         }
 
-        buffer.Dispose();
+        data.Dispose();
     }
 
 
-    private static void HandlePlayerMovement(byte[] data)
+    private static void HandlePlayerMovement(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        float posX = data.ReadFloat();
+        float posY = data.ReadFloat();
+        float rotation = data.ReadFloat();
 
-        int connectionID = buffer.ReadInteger();
-        float posX = buffer.ReadFloat();
-        float posY = buffer.ReadFloat();
-        float rotation = buffer.ReadFloat();
-
-        buffer.Dispose();
-
-        NetPlayer.players[connectionID].transform.position = new Vector3(posX, posY, 0);
-        NetPlayer.players[connectionID].transform.rotation = Quaternion.Euler(0, 0, rotation);
+        NetPlayer.players[id].transform.position = new Vector3(posX, posY, 0);
+        NetPlayer.players[id].transform.rotation = Quaternion.Euler(0, 0, rotation);
+        data.Dispose();
     }
 
-    private static void HandleRemovePlayer(byte[] data)
+    private static void HandleRemovePlayer(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
 
-        int connectionID = buffer.ReadInteger();
-
-        buffer.Dispose();
-
-        NetworkManager.Destroy(GameObject.Find($"Player | {connectionID}"));
-        NetPlayer.players.Remove(connectionID);
+        NetworkManager.Destroy(NetPlayer.players[id]);
+        NetPlayer.players.Remove(id);
+        data.Dispose();
     }
 
-    private static void HandleNewProjectile(byte[] data)
+    private static void HandleNewProjectile(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
-        int bulletID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        int bulletID = data.ReadInteger();
 
-        buffer.Dispose();
-        NetPlayer.InstantiateNewProjectile(connectionID, bulletID);
+        NetPlayer.InstantiateNewProjectile(id, bulletID);
+        data.Dispose();
     }
 
-    private static void HandlePlayerHealth(byte[] data)
+    private static void HandlePlayerHealth(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
-        int health = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        int health = data.ReadInteger();
 
-        buffer.Dispose();
 
-        if (connectionID == NetPlayer.connectionID)
+        if (id == NetPlayer.Id)
         {
-            Player player = NetPlayer.players[connectionID].GetComponent<Player>();
+            Player player = NetPlayer.players[id].GetComponent<Player>();
             player.Health = health;
             NetPlayer.healthText.text = $"Health: {health}";
         }
+        data.Dispose();
     }
 
-    private static void HandlePlayerDeath(byte[] data)
+    private static void HandlePlayerDeath(ByteBuffer data)
     {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.WriteBytes(data);
-        int packageID = buffer.ReadInteger();
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        float posX = data.ReadFloat();
+        float posY = data.ReadFloat();
+        float rotation = data.ReadFloat();
+        int health = data.ReadInteger();
 
-        int connectionID = buffer.ReadInteger();
-        float posX = buffer.ReadFloat();
-        float posY = buffer.ReadFloat();
-        float rotation = buffer.ReadFloat();
-        int health = buffer.ReadInteger();
 
-        buffer.Dispose();
-
-        GameObject player = NetPlayer.players[connectionID];
+        GameObject player = NetPlayer.players[id];
         player.transform.position = new Vector3(posX, posY, player.transform.position.z);
         player.transform.rotation = new Quaternion(0, 0, rotation, 0);
         player.GetComponent<Player>().Health = health;
         NetPlayer.healthText.text = $"Health: {health}";
+        data.Dispose();
     }
 }
