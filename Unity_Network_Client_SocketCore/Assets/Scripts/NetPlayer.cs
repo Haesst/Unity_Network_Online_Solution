@@ -26,12 +26,22 @@ public class NetPlayer : MonoBehaviour
     private Text enemyPointerText;
     private Image enemyPointerEnemySprite;
 
+    public Text[] highscore = new Text[5];
+
     private float tick;
 
     private void Awake()
     {
 
         instance = this;
+
+        #region Setup highscore
+        GameObject scoreboard = GameObject.Find("ScoreBoard");
+        for (int i = 0; i < highscore.Length; i++)
+        {
+            highscore[i] = scoreboard.transform.GetChild(i).GetComponent<Text>();
+        }
+        #endregion
 
         #region setup Ship sprites
         if (sprites.Count <= 0)
@@ -146,13 +156,15 @@ public class NetPlayer : MonoBehaviour
 
         if (name == null)
         {
-            name = NetworkManager.instance.selectName.transform.GetChild(0).GetChild(2).GetComponent<Text>().text;
+            InputField nameField = NetworkManager.instance.selectName.transform.GetChild(0).GetComponent<InputField>();
+            nameField.Select();
+            name = nameField.text;
         }
 
         GameObject go = Instantiate(playerPrefab);
         go.name = $"Player: {name} | {id}";
-        go.transform.position = new Vector3(posX, posY, go.transform.position.z);
-        go.transform.rotation = Quaternion.Euler(0, 0, rotation);
+        go.transform.position = new Vector2(posX, posY);
+        go.transform.rotation = Quaternion.Euler(0.0f, 0.0f, rotation);
         go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[spriteID];
 
         Player player = go.GetComponent<Player>();

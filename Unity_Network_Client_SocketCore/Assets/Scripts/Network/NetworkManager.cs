@@ -40,16 +40,24 @@ public class NetworkManager : MonoBehaviour
 
     public void JoinGame()
     {
-        Text playerName = selectName.transform.GetChild(0).GetChild(2).GetComponent<Text>();
-        if (playerName.text == string.Empty)
+        InputField nameField = selectName.transform.GetChild(0).GetComponent<InputField>();
+        nameField.Select();
+        if (nameField.text == string.Empty)
         {
-            selectName.transform.GetChild(0).GetChild(1).GetComponent<Text>().color = Color.red;
+            nameField.placeholder.color = Color.red;
+            return;
+        }
+        if (nameField.text.Length > 20)
+        {
+            nameField.placeholder.color = Color.red;
+            nameField.placeholder.GetComponent<Text>().text = "Max '20' characters!";
+            nameField.text = string.Empty;
             return;
         }
 
-        if (selectName.transform.GetChild(0).GetChild(1).GetComponent<Text>().color == Color.red)
+        if (nameField.placeholder.color == Color.red)
         {
-            selectName.transform.GetChild(0).GetChild(1).GetComponent<Text>().color = new Color(50, 50, 50);
+            nameField.placeholder.color = new Color(50, 50, 50);
         }
 
         do

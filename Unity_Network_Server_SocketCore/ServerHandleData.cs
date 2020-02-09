@@ -107,12 +107,17 @@ namespace Unity_Network_Server_SocketCore
             byte[] bulletGuidBytes = data.ReadBytes(bulletLength);
             Guid bulletID = new Guid(bulletGuidBytes);
 
+            int ownerLength = data.ReadInteger();
+            byte[] ownerGuidBytes = data.ReadBytes(ownerLength);
+            Guid ownerID = new Guid(ownerGuidBytes);    // ID of player that shot the bullet
+
             int playerLength = data.ReadInteger();
             byte[] playerGuidBytes = data.ReadBytes(playerLength);
             Guid playerID = new Guid(playerGuidBytes);    // playerID of player that got hit
 
             Socket tempSocket = ServerTCP.GetSocketByGuid(playerID);
             ServerTCP.clients[tempSocket].player.BulletHitId = bulletID;
+            ServerTCP.clients[tempSocket].player.BulletOwnerId = ownerID;
         }
         private static void HandlePlayerGotHit(Socket socket, ByteBuffer data)
         {
@@ -137,7 +142,9 @@ namespace Unity_Network_Server_SocketCore
                 {
                     //Console.WriteLine($"playerID: {player.Id} died!");
                     player.ResetPlayerData();
+                    ServerTCP.clients[ServerTCP.GetSocketByGuid(player.BulletOwnerId)].player.Kills++;
                     ServerTCP.PACKET_SendPlayerDied(socket, player);
+                    //ServerTCP.PACKET_SendHighscore();
                 }
             }
         }

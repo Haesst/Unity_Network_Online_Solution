@@ -9,6 +9,7 @@ public enum ServerPackages
     Server_SendNewProjectile,
     Server_SendPlayerHealth,
     Server_SendPlayerDied,
+    Server_SendHighscore,
 
 }
 

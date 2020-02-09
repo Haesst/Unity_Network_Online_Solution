@@ -15,6 +15,7 @@ namespace Unity_Network_Server_SocketCore
 
         private static Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public static Dictionary<Socket, ClientSocket> clients = new Dictionary<Socket, ClientSocket>();
+        public static Player[] highscorePlayers = new Player[5];
         private static int port = 7171;
 
         public static void InitTCP()
@@ -217,6 +218,75 @@ namespace Unity_Network_Server_SocketCore
             buffer.Write(player.Rotation);
 
             buffer.Write(player.Health);
+
+            int playerAmount = 0;
+            foreach (var client in clients)
+            {
+                Player highscoreplayer = client.Value.player;
+                for (int i = 0; i < highscorePlayers.Length; i++)
+                {
+                    if (highscorePlayers[i] == null && !highscorePlayers.Contains(highscoreplayer))
+                    {
+                        highscorePlayers[i] = highscoreplayer;
+                        playerAmount++;
+                        break;
+                    }
+                    if (highscorePlayers[i] != null)
+                    {
+                        if (highscoreplayer.Kills > highscorePlayers[i].Kills)
+                        {
+                            highscorePlayers[i] = highscoreplayer;
+                            playerAmount++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            buffer.Write(playerAmount);
+            for (int i = 0; i < playerAmount; i++)
+            {
+                if (highscorePlayers[i] != null)
+                {
+                    buffer.Write(highscorePlayers[i].Name);
+                    buffer.Write(highscorePlayers[i].Kills);
+                }
+            }
+
+            SendDataToAll(buffer);
+        }
+
+        public static void PACKET_SendHighscore()
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.Write((int)ServerPackages.Server_SendHighscore);
+
+            Player[] highscorePlayers = new Player[5];
+            int playerAmount = 0;
+            foreach (var client in clients)
+            {
+                Player player = client.Value.player;
+                for (int i = 0; i < highscorePlayers.Length; i++)
+                {
+                    if (highscorePlayers[i] == null & !highscorePlayers.Contains(player) || player.Kills > highscorePlayers[i].Kills)
+                    {
+                        highscorePlayers[i] = player;
+                        playerAmount++;
+                        break;
+                    }
+                }
+            }
+
+            buffer.Write(playerAmount);
+            for (int i = 0; i < playerAmount; i++)
+            {
+                if (highscorePlayers[i] != null)
+                {
+                    Player player = highscorePlayers[i];
+                    buffer.Write(player.Name);
+                    buffer.Write(player.Kills);
+                }
+            }
 
             SendDataToAll(buffer);
         }

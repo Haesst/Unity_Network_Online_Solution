@@ -105,13 +105,15 @@ public class ClientTCP
         buffer.Write(bulletID.ToByteArray());
         SendData(buffer);
     }
-    public static void PACKAGE_SendProjectileHit(Guid bulletID, Guid playerID)
+    public static void PACKAGE_SendProjectileHit(Guid bulletID, Guid ownerID, Guid playerID)
     {
         ByteBuffer buffer = new ByteBuffer();
         buffer.Write((int)ClientPackages.Client_SendProjectileHit);
 
         buffer.Write(bulletID.ToByteArray().Length);
         buffer.Write(bulletID.ToByteArray());
+        buffer.Write(ownerID.ToByteArray().Length);
+        buffer.Write(ownerID.ToByteArray());
         buffer.Write(playerID.ToByteArray().Length);
         buffer.Write(playerID.ToByteArray());
 

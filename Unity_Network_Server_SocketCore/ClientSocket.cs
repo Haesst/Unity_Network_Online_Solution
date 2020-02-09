@@ -63,6 +63,17 @@ namespace Unity_Network_Server_SocketCore
             if (ServerTCP.clients.ContainsKey(socket))
             {
                 ServerTCP.PACKET_SendRemovePlayer(socket);
+                //for (int i = 0; i < ServerTCP.highscorePlayers.Length; i++)
+                //{
+                //    if (ServerTCP.highscorePlayers[i] != null)
+                //    {
+                //        if (ServerTCP.highscorePlayers[i].Id != null && ServerTCP.highscorePlayers[i].Id == id)
+                //        {
+                //            ServerTCP.highscorePlayers[i] = null;
+                //            break;
+                //        }
+                //    }
+                //}
                 Console.WriteLine($"User disconnected : {socket.RemoteEndPoint.ToString()} | ID: {id}");
                 socket.Shutdown(SocketShutdown.Both);
                 ServerTCP.clients.Remove(socket);

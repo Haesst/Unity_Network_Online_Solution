@@ -13,8 +13,7 @@ public class Player : MonoBehaviour
     private float posX;
     private float posY;
     private float rotation;
-
-    
+    private int kills;
 
     public Player(Guid id)
     {
@@ -25,6 +24,7 @@ public class Player : MonoBehaviour
     public int SpriteID { get => spriteID; set => spriteID = value; }
     public int Health { get => health; set => health = value; }
     public string Name { get => name; set => name = value; }
+    public int Kills { get => kills; set => kills = value; }
 
     private void Awake()
     {

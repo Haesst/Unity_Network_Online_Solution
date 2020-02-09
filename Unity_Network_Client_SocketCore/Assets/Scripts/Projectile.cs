@@ -7,7 +7,7 @@ public class Projectile : MonoBehaviour
     CapsuleCollider2D capsuleCollider;
     float projectileSpeed;
     float maxTravelTime;
-    int timer;
+    float timer;
 
     public Transform parent;
     public Guid id;
@@ -20,7 +20,7 @@ public class Projectile : MonoBehaviour
     }
     private void FixedUpdate()
     {
-        timer++;
+        timer += Time.deltaTime * 100;
         transform.position = transform.position + ((transform.up * Time.deltaTime) * projectileSpeed);
         if (timer >= maxTravelTime) { DestroyBullet(); }
     }
@@ -33,7 +33,8 @@ public class Projectile : MonoBehaviour
             // Then send it to the server for comparing, and also destroy the local bullet gameObject
             //TODO: Explosion effect
             Guid playerID = collision.GetComponent<Player>().Id;
-            ClientTCP.PACKAGE_SendProjectileHit(id, playerID);
+            Guid ownerID = parent.GetComponent<Player>().Id;
+            ClientTCP.PACKAGE_SendProjectileHit(id, ownerID, playerID);
             DestroyBullet();
         }
 

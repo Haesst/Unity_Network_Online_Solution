@@ -18,6 +18,7 @@ public class ClientHandleData
         packetList.Add((int)ServerPackages.Server_SendNewProjectile, HandleNewProjectile);
         packetList.Add((int)ServerPackages.Server_SendPlayerHealth, HandlePlayerHealth);
         packetList.Add((int)ServerPackages.Server_SendPlayerDied, HandlePlayerDeath);
+        packetList.Add((int)ServerPackages.Server_SendHighscore, HandleHighscore);
     }
     public static void HandleData(byte[] data)
     {
@@ -147,5 +148,23 @@ public class ClientHandleData
         player.transform.rotation = new Quaternion(0, 0, rotation, 0);
         player.GetComponent<Player>().Health = health;
         NetPlayer.healthText.text = $"Health: {health}";
+
+        int playerAmount = data.ReadInteger();
+        for (int i = 0; i < playerAmount; i++)
+        {
+            string name = data.ReadString();
+            int kills = data.ReadInteger();
+            NetPlayer.instance.highscore[i].text = $"{i + 1}. {name} | {kills}";
+        }
+    }
+    private static void HandleHighscore(ByteBuffer data)
+    {
+        int playerAmount = data.ReadInteger();
+        for (int i = 0; i < playerAmount; i++)
+        {
+            string name = data.ReadString();
+            int kills = data.ReadInteger();
+            NetPlayer.instance.highscore[i].text = $"{i + 1}. {name} | {kills}";
+        }
     }
 }
