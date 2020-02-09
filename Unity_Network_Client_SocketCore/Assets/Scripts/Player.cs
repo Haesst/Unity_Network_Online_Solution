@@ -39,7 +39,7 @@ public class Player : MonoBehaviour
             if (Id == NetPlayer.Id)
             {
                 // This send the playerID and bulletID when the player got hit for comparing on serverside, if its valid the player will lose health
-                int bulletID = collision.GetComponent<Projectile>().bulletID;
+                Guid bulletID = collision.GetComponent<Projectile>().id;
                 ClientTCP.PACKAGE_SendPlayerGotHit(Id, bulletID);
             }
         }

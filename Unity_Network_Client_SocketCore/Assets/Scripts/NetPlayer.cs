@@ -12,7 +12,7 @@ public class NetPlayer : MonoBehaviour
     [SerializeField] private static List<Sprite> sprites = new List<Sprite>();
 
     public static Dictionary<Guid, GameObject> players = new Dictionary<Guid, GameObject>();
-    public static Dictionary<int, GameObject> projectiles = new Dictionary<int, GameObject>();
+    public static Dictionary<Guid, GameObject> projectiles = new Dictionary<Guid, GameObject>();
     public static int onlinePlayerCount;
     public static GameObject bulletPrefab;
     public static GameObject playerPrefab;
@@ -26,15 +26,34 @@ public class NetPlayer : MonoBehaviour
     private Text enemyPointerText;
     private Image enemyPointerEnemySprite;
 
+    private float tick;
+
     private void Awake()
     {
+
         instance = this;
+
+        #region setup Ship sprites
+        if (sprites.Count <= 0)
+        {
+            Sprite[] tempSprites = Resources.LoadAll<Sprite>("Sprites/ships");
+            foreach (var sprite in tempSprites)
+            {
+                if (sprite.name.Contains("ships_"))
+                {
+                    sprites.Add(sprite);
+                }
+            }
+        }
+        #endregion
+
         #region Setup Prefabs
         bulletPrefab = Resources.Load("Prefabs/Bullet") as GameObject;
         playerPrefab = Resources.Load("Prefabs/Player") as GameObject;
         healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
         crossair = Instantiate(Resources.Load("Prefabs/Crossair") as GameObject);
         #endregion
+
         #region Setup Player Radar
         enemyPointer = GameObject.Find("Canvas/EnemyPointer");
         enemyPointerArrow = GameObject.Find("Canvas/EnemyPointer/Arrow").GetComponent<RectTransform>();
@@ -47,15 +66,17 @@ public class NetPlayer : MonoBehaviour
     private void FixedUpdate()
     {
         if (!NetworkManager.isConnected) { return; }
-        // If there is no connectionID set request a connectionID from the server
-        //if (connectionID <= 0) { ClientTCP.PACKAGE_RequestConnectionID(); }
-        if (Id != null && players.Count < onlinePlayerCount) { ClientTCP.PACKAGE_RequestWorldPlayers(); }
 
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         crossair.transform.position = mousePos;
 
         PlayerRadar();
+        if (tick >= Time.deltaTime)
+        {
+            ClientTCP.PACKAGE_PingToServer();
+            tick -= Time.deltaTime;
+        }
+        tick += Time.deltaTime;
     }
 
     private void PlayerRadar()
@@ -107,23 +128,16 @@ public class NetPlayer : MonoBehaviour
         return bestTarget;
     }
 
-    public static void SetConnectionID(Guid id)
+    public static void SetGuid(Guid id)
     {
-        if (Id != null) { return; }
+        if (Id != Guid.Empty) { return; }
         Id = id;
-    }
-
-    public static int GetPositiveHashCode()
-    {
-        System.Object obj = new System.Object();
-        int num = obj.GetHashCode();
-        num = (num < 0) ? -num : num;
-        return num;
+        InstantiateNewPlayer(Id);
     }
 
     public static void InstantiateNewPlayer(Guid id, int spriteID = -1, string name = null, float posX = 0, float posY = 0, float rotation = 0)
     {
-        if (id != null | players.ContainsKey(Id)) { return; }
+        if (id == Guid.Empty || players.ContainsKey(id)) { return; }
 
         if (spriteID < 0)
         {
@@ -148,32 +162,16 @@ public class NetPlayer : MonoBehaviour
 
         players.Add(id, go);
 
-        if (id == NetPlayer.Id)
+        if (Id == id)
         {
             PlayerInput.instance.id = id;
             ClientTCP.PACKAGE_SendPlayerData(id);
         }
     }
 
-    public void InstantiateNewPlayerAtPosition(Guid id, float posX, float posY, float rotation, string name, int sprite = 0)
-    {
-        if (id != null | players.ContainsKey(id)) { return; }
-
-        GameObject go = Instantiate(playerPrefab);
-        go.name = $"Player: {name} | {id}";
-        go.transform.position = new Vector3(posX, posY, go.transform.position.z);
-        go.transform.rotation = Quaternion.Euler(0, 0, rotation);
-        go.GetComponentInChildren<SpriteRenderer>().sprite = sprites[sprite];
-
-        Player player = go.GetComponent<Player>();
-        player.Id = id;
-        player.Name = name;
-
-        players.Add(id, go);
-    }
     public static void InstantiateNewProjectile(Guid id)
     {
-        int bulletID = GetPositiveHashCode();
+        Guid bulletID = Guid.NewGuid();
         Transform parent = players[id].transform; // who shot the projectile
 
         GameObject bullet = Instantiate(bulletPrefab);
@@ -182,19 +180,14 @@ public class NetPlayer : MonoBehaviour
         bullet.transform.position = parent.position + parent.up;
 
         Projectile projectileData = bullet.GetComponent<Projectile>();
-        projectileData.bulletID = bulletID;
+        projectileData.id = bulletID;
         projectileData.parent = parent;
-
-        if (projectiles.ContainsKey(bulletID))
-        {
-            bulletID = GetPositiveHashCode();
-        }
 
         projectiles.Add(bulletID, bullet);
         ClientTCP.PACKAGE_SendProjectile(bulletID);
     }
 
-    public static void InstantiateNewProjectile(Guid id, int bulletID)
+    public static void InstantiateNewProjectile(Guid id, Guid bulletID)
     {
         Transform parent = players[id].transform;
 
@@ -204,7 +197,7 @@ public class NetPlayer : MonoBehaviour
         bullet.transform.position = parent.position + parent.up;
 
         Projectile projectileData = bullet.GetComponent<Projectile>();
-        projectileData.bulletID = bulletID;
+        projectileData.id = bulletID;
         projectileData.parent = parent;
 
         projectiles.Add(bulletID, bullet);

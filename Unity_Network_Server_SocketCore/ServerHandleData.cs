@@ -14,17 +14,17 @@ namespace Unity_Network_Server_SocketCore
             packetList = new Dictionary<int, Action<Socket, ByteBuffer>>();
             //Add server packets here
             packetList.Add((int)ClientPackages.Client_PingServer, HandlePingFromClient);
-            packetList.Add((int)ClientPackages.Client_ReceiveMessageFromClient, HandleChatMessageFromClient);
-            packetList.Add((int)ClientPackages.Client_RequestGuid, HandleRequestConnectionID);
-            packetList.Add((int)ClientPackages.Client_RequestWorldPlayers, HandleRequestWorldPlayers);
+            packetList.Add((int)ClientPackages.Client_SendDisconnect, HandleDisconnect);
+            packetList.Add((int)ClientPackages.Client_RequestGuid, HandleRequestGuid);
+            packetList.Add((int)ClientPackages.Client_SendPlayerData, HandlePlayerData);
+            packetList.Add((int)ClientPackages.Client_RequestWorldPlayer, HandleRequestWorldPlayer);
             packetList.Add((int)ClientPackages.Client_SendMovement, HandleClientMovement);
             packetList.Add((int)ClientPackages.Client_SendProjectile, HandleNewProjectile);
             packetList.Add((int)ClientPackages.Client_SendProjectileHit, HandleProjectileHit);
             packetList.Add((int)ClientPackages.Client_SendPlayerGotHit, HandlePlayerGotHit);
-            packetList.Add((int)ClientPackages.Client_SendPlayerData, HandlePlayerData);
         }
 
-        public static void HandleData(ref Socket socket, ref byte[] data)
+        public static void HandleData(Socket socket, byte[] data)
         {
             ByteBuffer buffer = new ByteBuffer();
             buffer.Write(data);
@@ -39,39 +39,44 @@ namespace Unity_Network_Server_SocketCore
 
         private static void HandlePingFromClient(Socket socket, ByteBuffer data)
         {
-            //Console.WriteLine($"connectionID '{ServerTCP._clientSockets[socket].connectionID}' did send a ping, lets send a ping back!");
-            ServerTCP.PACKET_PingToClient(ref socket);
-            data.Dispose();
+            ServerTCP.PACKET_PingToClient(socket);
         }
 
-        private static void HandleChatMessageFromClient(Socket socket, ByteBuffer data)
+        private static void HandleDisconnect(Socket socket, ByteBuffer data)
         {
-            Console.WriteLine("HandleChatMessageFromClient");
-
-            // Second slot should be the message
-            string message = data.ReadString();
-
-            // Write out a line in the console
-            Console.WriteLine($"Recieved message from id: {ServerTCP.clients[socket].id.ToString()}, message: {message}");
-
-            // Call the function that broadcasts the message
-            ServerTCP.PACKET_ChatmessageToClient(ref socket, message);
-
-            // Dispose the buffer
-            data.Dispose();
+            if (socket.Connected)
+            {
+                socket.Shutdown(SocketShutdown.Both);
+                ServerTCP.clients[socket].CloseConnection();
+            }
         }
 
-        private static void HandleRequestConnectionID(Socket socket, ByteBuffer data)
+        private static void HandleRequestGuid(Socket socket, ByteBuffer data)
         {
-            ServerTCP.PACKET_SendGuid(ref socket);
-            data.Dispose();
+            ServerTCP.PACKET_SendGuid(socket);
         }
 
-        private static void HandleRequestWorldPlayers(Socket socket, ByteBuffer data)
+        private static void HandlePlayerData(Socket socket, ByteBuffer data)
         {
-            ServerTCP.PACKET_SendWorldPlayersToNewPlayer(ref socket);
-            ServerTCP.PACKET_SendNewPlayerToWorld(ref socket);
-            data.Dispose();
+            string name = data.ReadString();
+            int spriteID = data.ReadInteger();
+
+            Player player = ServerTCP.clients[socket].player;
+            player.Name = name;
+            player.SpriteID = spriteID;
+
+            ServerTCP.PACKET_SendNewPlayerToWorld(socket);
+            Console.WriteLine($"Player: '{name}' | '{player.Id}' joined the game.");
+            ServerTCP.PACKET_SendPlayerHealth(socket, player.Health);
+        }
+
+        private static void HandleRequestWorldPlayer(Socket socket, ByteBuffer data)
+        {
+            int length = data.ReadInteger();
+            byte[] guidBytes = data.ReadBytes(length);
+            Guid id = new Guid(guidBytes);
+
+            ServerTCP.PACKET_SendNewPlayerToWorld(ServerTCP.GetSocketByGuid(id));
         }
 
         private static void HandleClientMovement(Socket socket, ByteBuffer data)
@@ -80,40 +85,43 @@ namespace Unity_Network_Server_SocketCore
             float y = data.ReadFloat();
             float rotation = data.ReadFloat();
 
-
             // Set player position on server side 
             ServerTCP.clients[socket].player.SetPlayerPosition(x, y, rotation);
 
             // Send player position to all clients
-            ServerTCP.PACKET_SendPlayerMovement(ref socket, x, y, rotation);
-            data.Dispose();
+            ServerTCP.PACKET_SendPlayerMovement(socket, x, y, rotation);
         }
 
         private static void HandleNewProjectile(Socket socket, ByteBuffer data)
         {
-            int bulletID = data.ReadInteger();
+            int length = data.ReadInteger();
+            byte[] guidBytes = data.ReadBytes(length);
+            Guid bulletID = new Guid(guidBytes);
 
-            ServerTCP.PACKET_ProjectileToClient(ref socket, bulletID);
-            data.Dispose();
+            ServerTCP.PACKET_ProjectileToClient(socket, bulletID);
         }
 
         private static void HandleProjectileHit(Socket socket, ByteBuffer data)
         {
-            int bulletID = data.ReadInteger();
-            int length = data.ReadInteger();
-            byte[] guidBytes = data.ReadBytes(length);
-            Guid playerID = new Guid(guidBytes);    // "connectionID" of player that got hit
+            int bulletLength = data.ReadInteger();
+            byte[] bulletGuidBytes = data.ReadBytes(bulletLength);
+            Guid bulletID = new Guid(bulletGuidBytes);
+
+            int playerLength = data.ReadInteger();
+            byte[] playerGuidBytes = data.ReadBytes(playerLength);
+            Guid playerID = new Guid(playerGuidBytes);    // playerID of player that got hit
 
             Socket tempSocket = ServerTCP.GetSocketByGuid(playerID);
             ServerTCP.clients[tempSocket].player.BulletHitId = bulletID;
-            data.Dispose();
         }
         private static void HandlePlayerGotHit(Socket socket, ByteBuffer data)
         {
             int length = data.ReadInteger();
             byte[] guidBytes = data.ReadBytes(length);
             Guid playerID = new Guid(guidBytes);
-            int bulletID = data.ReadInteger();
+            int bulletLength = data.ReadInteger();
+            byte[] bulletGuidBytes = data.ReadBytes(bulletLength);
+            Guid bulletID = new Guid(bulletGuidBytes);
 
             Socket tempSocket = ServerTCP.GetSocketByGuid(playerID);
             Player player = ServerTCP.clients[tempSocket].player;
@@ -123,37 +131,15 @@ namespace Unity_Network_Server_SocketCore
                 if (player.Health > 1)
                 {
                     player.Health--;
-                    ServerTCP.PACKET_SendPlayerHealth(ref socket, player.Health);
-                    //Console.WriteLine($"playerID: {player.ConnectionID} got hit! HP: {player.Health}");
+                    ServerTCP.PACKET_SendPlayerHealth(socket, player.Health);
                 }
                 else
                 {
-                    Console.WriteLine($"playerID: {player.Id} died!");
-                    //player = new Player(player.ConnectionID);
-                    //TODO: send player is dead
+                    //Console.WriteLine($"playerID: {player.Id} died!");
                     player.ResetPlayerData();
-                    ServerTCP.PACKET_SendPlayerDied(ref socket, player);
+                    ServerTCP.PACKET_SendPlayerDied(socket, player);
                 }
             }
-            data.Dispose();
-        }
-        private static void HandlePlayerData(Socket socket, ByteBuffer data)
-        {
-
-            string name = data.ReadString();
-            int spriteID = data.ReadInteger();
-
-            Player player = ServerTCP.clients[socket].player;
-            player.Name = name;
-            player.SpriteID = spriteID;
-
-            ServerTCP.PACKET_SendPlayerHealth(ref socket, player.Health);
-
-            //ServerTCP.PACKET_SendWorldPlayersToNewPlayer(ref socket);
-            ServerTCP.PACKET_SendNewPlayerToWorld(ref socket);
-
-            Console.WriteLine($"Player: '{name}' | '{player.Id}' joined the game!");
-            data.Dispose();
         }
     }
 }

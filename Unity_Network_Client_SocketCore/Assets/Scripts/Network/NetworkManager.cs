@@ -62,4 +62,9 @@ public class NetworkManager : MonoBehaviour
         Cursor.visible = false;
     }
 
+    private void OnApplicationQuit()
+    {
+        ClientTCP.PACKAGE_Disconnect();
+    }
+
 }

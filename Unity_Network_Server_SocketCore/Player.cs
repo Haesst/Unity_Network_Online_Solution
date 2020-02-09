@@ -11,7 +11,7 @@ namespace Unity_Network_Server_SocketCore
         private float posX;
         private float posY;
         private float rotation;
-        private int bulletHitId;
+        private Guid bulletHitId;
         private bool isAlive;
         private string name;
 
@@ -25,7 +25,7 @@ namespace Unity_Network_Server_SocketCore
         public float Rotation { get => rotation; }
         public Guid Id { get => id; set => id = value; }
         public int SpriteID { get => spriteID; set => spriteID = value; }
-        public int BulletHitId { get => bulletHitId; set => bulletHitId = value; }
+        public Guid BulletHitId { get => bulletHitId; set => bulletHitId = value; }
         public int Health { get => health; set => health = value; }
         public string Name { get => name; set => name = value; }
 

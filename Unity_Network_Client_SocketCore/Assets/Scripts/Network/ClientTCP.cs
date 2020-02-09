@@ -17,7 +17,6 @@ public class ClientTCP
         if (socket.Connected)
         {
             NetworkManager.isConnected = true;
-            PACKAGE_PingToServer();
             PACKAGE_RequestGuid();
         }
     }
@@ -27,14 +26,14 @@ public class ClientTCP
         int received = socket.EndReceive(AR);
         byte[] dataBuffer = new byte[received];
         Array.Copy(buffer, dataBuffer, received);
-        UnityThread.executeInFixedUpdate(() =>
+        UnityThread.executeInUpdate(() =>
         {
-            ClientHandleData.HandleData(ref dataBuffer);
+            ClientHandleData.HandleData(dataBuffer);
         });
         ClientTCP.socket.BeginReceive(buffer, 0, buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), ClientTCP.socket);
     }
 
-    public static void SendData(ref ByteBuffer data)
+    public static void SendData(ByteBuffer data)
     {
         socket.Send(data.ToArray());
         data.Dispose();
@@ -45,19 +44,14 @@ public class ClientTCP
         ByteBuffer buffer = new ByteBuffer();
         buffer.Write((int)ClientPackages.Client_PingServer);
 
-        SendData(ref buffer);
-        buffer.Dispose();
+        SendData(buffer);
     }
 
-    public static void PACKAGE_BroadcastMsg(string msg)
+    public static void PACKAGE_Disconnect()
     {
         ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_ReceiveMessageFromClient);
-
-        buffer.Write(msg);
-
-        SendData(ref buffer);
-        buffer.Dispose();
+        buffer.Write((int)ClientPackages.Client_SendDisconnect);
+        SendData(buffer);
     }
 
     public static void PACKAGE_RequestGuid()
@@ -65,63 +59,7 @@ public class ClientTCP
         ByteBuffer buffer = new ByteBuffer();
         buffer.Write((int)ClientPackages.Client_RequestGuid);
 
-        SendData(ref buffer);
-        buffer.Dispose();
-    }
-
-    public static void PACKAGE_RequestWorldPlayers()
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_RequestWorldPlayers);
-
-        SendData(ref buffer);
-        buffer.Dispose();
-    }
-
-    public static void PACKAGE_SendMovement(float posX, float posY, float rotation)
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_SendMovement);
-
-        buffer.Write(posX);
-        buffer.Write(posY);
-        buffer.Write(rotation);
-
-        SendData(ref buffer);
-        buffer.Dispose();
-    }
-
-    public static void PACKAGE_SendProjectile(int bulletID)
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_SendProjectile);
-        buffer.Write(bulletID);
-        SendData(ref buffer);
-        buffer.Dispose();
-    }
-    public static void PACKAGE_SendProjectileHit(int bulletID, Guid playerID)
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_SendProjectileHit);
-
-        buffer.Write(bulletID);
-        buffer.Write(playerID.ToByteArray().Length);
-        buffer.Write(playerID.ToByteArray());
-
-        SendData(ref buffer);
-        buffer.Dispose();
-    }
-    public static void PACKAGE_SendPlayerGotHit(Guid id, int bulletID)
-    {
-        ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_SendPlayerGotHit);
-
-        buffer.Write(id.ToByteArray().Length);
-        buffer.Write(id.ToByteArray());
-        buffer.Write(bulletID);
-
-        SendData(ref buffer);
-        buffer.Dispose();
+        SendData(buffer);
     }
 
     public static void PACKAGE_SendPlayerData(Guid id)
@@ -133,7 +71,62 @@ public class ClientTCP
         buffer.Write(player.Name);
         buffer.Write(player.SpriteID);
 
-        SendData(ref buffer);
-        buffer.Dispose();
+        SendData(buffer);
+    }
+
+    public static void PACKAGE_RequestWorldPlayer(Guid id)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_RequestWorldPlayer);
+
+        buffer.Write(id.ToByteArray().Length);
+        buffer.Write(id.ToByteArray());
+
+        SendData(buffer);
+    }
+
+    public static void PACKAGE_SendMovement(float posX, float posY, float rotation)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_SendMovement);
+
+        buffer.Write(posX);
+        buffer.Write(posY);
+        buffer.Write(rotation);
+
+        SendData(buffer);
+    }
+
+    public static void PACKAGE_SendProjectile(Guid bulletID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_SendProjectile);
+        buffer.Write(bulletID.ToByteArray().Length);
+        buffer.Write(bulletID.ToByteArray());
+        SendData(buffer);
+    }
+    public static void PACKAGE_SendProjectileHit(Guid bulletID, Guid playerID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_SendProjectileHit);
+
+        buffer.Write(bulletID.ToByteArray().Length);
+        buffer.Write(bulletID.ToByteArray());
+        buffer.Write(playerID.ToByteArray().Length);
+        buffer.Write(playerID.ToByteArray());
+
+        SendData(buffer);
+    }
+    public static void PACKAGE_SendPlayerGotHit(Guid id, Guid bulletID)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_SendPlayerGotHit);
+
+        buffer.Write(id.ToByteArray().Length);
+        buffer.Write(id.ToByteArray());
+        buffer.Write(bulletID.ToByteArray().Length);
+        buffer.Write(bulletID.ToByteArray());
+
+        SendData(buffer);
     }
 }

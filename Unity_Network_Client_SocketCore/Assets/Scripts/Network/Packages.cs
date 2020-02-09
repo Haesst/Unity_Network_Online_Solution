@@ -2,10 +2,8 @@
 public enum ServerPackages
 {
     Server_PingClient = 1,
-    Server_SendChatMessageClient,
     Server_SendGuid,
     Server_SendNewPlayerToWorld,
-    Server_SendWorldPlayersToNewPlayer,
     Server_SendPlayerMovement,
     Server_SendRemovePlayer,
     Server_SendNewProjectile,
@@ -17,12 +15,12 @@ public enum ServerPackages
 public enum ClientPackages
 {
     Client_PingServer = 1,
-    Client_ReceiveMessageFromClient,
+    Client_SendDisconnect,
     Client_RequestGuid,
-    Client_RequestWorldPlayers,
+    Client_SendPlayerData,
+    Client_RequestWorldPlayer,
     Client_SendMovement,
     Client_SendProjectile,
     Client_SendProjectileHit,
     Client_SendPlayerGotHit,
-    Client_SendPlayerData,
 }

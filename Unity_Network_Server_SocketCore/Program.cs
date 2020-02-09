@@ -9,10 +9,6 @@ namespace Unity_Network_Server_SocketCore
         private static bool isRunning = false;
         static void Main(string[] args)
         {
-            //InitConsoleThread();
-            //ServerHandleData.InitializePacketList();
-            //ServerTCP.SetupServer();
-
             Console.Write("Initializing Server...");
             InitConsoleThread();
             ServerHandleData.InitPacketList();

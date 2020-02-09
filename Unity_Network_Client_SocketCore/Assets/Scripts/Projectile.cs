@@ -10,7 +10,7 @@ public class Projectile : MonoBehaviour
     int timer;
 
     public Transform parent;
-    public int bulletID;
+    public Guid id;
 
     private void Awake()
     {
@@ -33,15 +33,14 @@ public class Projectile : MonoBehaviour
             // Then send it to the server for comparing, and also destroy the local bullet gameObject
             //TODO: Explosion effect
             Guid playerID = collision.GetComponent<Player>().Id;
-            ClientTCP.PACKAGE_SendProjectileHit(bulletID, playerID);
+            ClientTCP.PACKAGE_SendProjectileHit(id, playerID);
             DestroyBullet();
         }
 
     }
-
     private void DestroyBullet()
     {
-        NetPlayer.projectiles.Remove(bulletID);
+        NetPlayer.projectiles.Remove(id);
         Destroy(gameObject);
     }
 }
