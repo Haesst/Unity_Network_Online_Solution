@@ -7,7 +7,7 @@ public class Player : MonoBehaviour
     public static Player instance;
 
     private Guid id;
-    private string name;
+    private string playerName;
     private int spriteID;
     private int health;
     private float posX;
@@ -23,7 +23,7 @@ public class Player : MonoBehaviour
     public Guid Id { get => id; set => id = value; }
     public int SpriteID { get => spriteID; set => spriteID = value; }
     public int Health { get => health; set => health = value; }
-    public string Name { get => name; set => name = value; }
+    public string Name { get => playerName; set => playerName = value; }
     public int Kills { get => kills; set => kills = value; }
 
     private void Awake()

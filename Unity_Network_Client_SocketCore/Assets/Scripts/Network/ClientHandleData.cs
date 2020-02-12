@@ -166,5 +166,9 @@ public class ClientHandleData
             int kills = data.ReadInteger();
             NetPlayer.instance.highscore[i].text = $"{i + 1}. {name} | {kills}";
         }
+        for (int i = playerAmount + 1; i < NetPlayer.instance.highscore.Length; i++)
+        {
+            NetPlayer.instance.highscore[i].text = String.Empty;
+        }
     }
 }
