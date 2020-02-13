@@ -33,8 +33,8 @@ public class Player : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Player") { return; }  // if we collide with a player do nothing just return
-        if (collision.tag == "Bullet")
+        //if (collision.tag == "Player") { return; }  // if we collide with a player do nothing just return
+        if (collision.CompareTag("Bullet") /*collision.tag == "Bullet"*/)
         {
             if (Id == NetPlayer.Id)
             {

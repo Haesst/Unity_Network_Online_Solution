@@ -26,8 +26,8 @@ public class Projectile : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Bullet") { return; }  // do nothing if we collide whit a other bullet for now, should we be able to destroy other bullets?
-        if (collision.tag == "Player")
+        //if (collision.tag == "Bullet") { return; }  // do nothing if we collide whit a other bullet for now, should we be able to destroy other bullets?
+        if (collision.CompareTag("Player") /*collision.tag == "Player"*/)
         {
             // This gets the playerID of the player that got hit, and the bulletID of the bullet that hit the player.
             // Then send it to the server for comparing, and also destroy the local bullet gameObject

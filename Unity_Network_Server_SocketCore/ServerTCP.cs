@@ -219,41 +219,9 @@ namespace Unity_Network_Server_SocketCore
 
             buffer.Write(player.Health);
 
-            int playerAmount = 0;
-            foreach (var client in clients)
-            {
-                Player highscoreplayer = client.Value.player;
-                for (int i = 0; i < highscorePlayers.Length; i++)
-                {
-                    if (highscorePlayers[i] == null && !highscorePlayers.Contains(highscoreplayer))
-                    {
-                        highscorePlayers[i] = highscoreplayer;
-                        playerAmount++;
-                        break;
-                    }
-                    if (highscorePlayers[i] != null)
-                    {
-                        if (highscoreplayer.Kills > highscorePlayers[i].Kills)
-                        {
-                            highscorePlayers[i] = highscoreplayer;
-                            playerAmount++;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            buffer.Write(playerAmount);
-            for (int i = 0; i < playerAmount; i++)
-            {
-                if (highscorePlayers[i] != null)
-                {
-                    buffer.Write(highscorePlayers[i].Name);
-                    buffer.Write(highscorePlayers[i].Kills);
-                }
-            }
-
             SendDataToAll(buffer);
+
+            PACKET_SendHighscore();
         }
 
         public static void PACKET_SendHighscore()
@@ -261,25 +229,44 @@ namespace Unity_Network_Server_SocketCore
             ByteBuffer buffer = new ByteBuffer();
             buffer.Write((int)ServerPackages.Server_SendHighscore);
 
-            Player[] highscorePlayers = new Player[5];
             int playerAmount = 0;
             foreach (var client in clients)
             {
                 Player player = client.Value.player;
                 for (int i = 0; i < highscorePlayers.Length; i++)
                 {
-                    if (highscorePlayers[i] == null & !highscorePlayers.Contains(player) || player.Kills > highscorePlayers[i].Kills)
+                    if (highscorePlayers[i] != null)
                     {
-                        highscorePlayers[i] = player;
-                        playerAmount++;
-                        break;
+                        if (player.Kills > highscorePlayers[i].Kills)
+                        {
+                            Player tempPlayer = highscorePlayers[i];
+                            highscorePlayers[i] = player;
+                            if (i < highscorePlayers.Length - 1)
+                            {
+                                highscorePlayers[i + 1] = tempPlayer;
+                            }
+                            playerAmount++;
+                        }
+                    }
+                    else
+                    {
+                        if (!highscorePlayers.Contains(player))
+                        {
+                            highscorePlayers[i] = player;
+                            playerAmount++;
+                        }
                     }
                 }
+            }
+            if (playerAmount > highscorePlayers.Length)
+            {
+                playerAmount = highscorePlayers.Length;
             }
 
             buffer.Write(playerAmount);
             for (int i = 0; i < playerAmount; i++)
             {
+                Console.WriteLine(i);
                 if (highscorePlayers[i] != null)
                 {
                     Player player = highscorePlayers[i];
@@ -287,7 +274,6 @@ namespace Unity_Network_Server_SocketCore
                     buffer.Write(player.Kills);
                 }
             }
-
             SendDataToAll(buffer);
         }
     }

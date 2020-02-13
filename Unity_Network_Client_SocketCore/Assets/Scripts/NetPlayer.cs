@@ -13,7 +13,6 @@ public class NetPlayer : MonoBehaviour
 
     public static Dictionary<Guid, GameObject> players = new Dictionary<Guid, GameObject>();
     public static Dictionary<Guid, GameObject> projectiles = new Dictionary<Guid, GameObject>();
-    public static int onlinePlayerCount;
     public static GameObject bulletPrefab;
     public static GameObject playerPrefab;
     public static GameObject crossair;
@@ -25,6 +24,7 @@ public class NetPlayer : MonoBehaviour
     private RectTransform enemyPointerArrow;
     private Text enemyPointerText;
     private Image enemyPointerEnemySprite;
+    private Camera mainCamera;
 
     public Text[] highscore = new Text[5];
 
@@ -34,12 +34,14 @@ public class NetPlayer : MonoBehaviour
     {
 
         instance = this;
+        mainCamera = Camera.main;
 
         #region Setup highscore
         GameObject scoreboard = GameObject.Find("ScoreBoard");
         for (int i = 0; i < highscore.Length; i++)
         {
             highscore[i] = scoreboard.transform.GetChild(i).GetComponent<Text>();
+            highscore[i].text = string.Empty;
         }
         #endregion
 
@@ -77,7 +79,7 @@ public class NetPlayer : MonoBehaviour
     {
         if (!NetworkManager.isConnected) { return; }
 
-        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 mousePos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         crossair.transform.position = mousePos;
 
         PlayerRadar();

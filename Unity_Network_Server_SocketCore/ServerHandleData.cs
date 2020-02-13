@@ -140,11 +140,15 @@ namespace Unity_Network_Server_SocketCore
                 }
                 else
                 {
-                    //Console.WriteLine($"playerID: {player.Id} died!");
+                    //if (ServerTCP.highscorePlayers.Contains(player))
+                    //{
+                    //    int index = Array.IndexOf(ServerTCP.highscorePlayers, player);
+                    //    ServerTCP.highscorePlayers[index] = null;
+                    //}
                     player.ResetPlayerData();
                     ServerTCP.clients[ServerTCP.GetSocketByGuid(player.BulletOwnerId)].player.Kills++;
-                    ServerTCP.PACKET_SendPlayerDied(socket, player);
                     //ServerTCP.PACKET_SendHighscore();
+                    ServerTCP.PACKET_SendPlayerDied(socket, player);
                 }
             }
         }

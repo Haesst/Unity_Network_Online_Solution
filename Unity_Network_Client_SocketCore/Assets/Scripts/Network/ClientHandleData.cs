@@ -35,18 +35,15 @@ public class ClientHandleData
     }
     private static void HandlePingFromServer(ByteBuffer data)
     {
-
-        // get the player amount each ping, should this be a different package?
-        //NetPlayer.onlinePlayerCount = data.ReadInteger();
-
         NetworkManager.elapsedMsTime.Stop();
-        //if (NetworkManager.pingMs.color != Color.white) { NetworkManager.pingMs.color = Color.white; }
-        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 100) { NetworkManager.pingMs.color = Color.red; }
-        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 40) { NetworkManager.pingMs.color = Color.yellow; }
-        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds < 40) { NetworkManager.pingMs.color = Color.green; }
+
+        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 150) { NetworkManager.pingMs.color = Color.red; }
+        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 75) { NetworkManager.pingMs.color = new Color32(255, 100, 0, 255); }   // Orange Color
+        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 20) { NetworkManager.pingMs.color = Color.yellow; }
+        else { NetworkManager.pingMs.color = Color.green; }
+
         NetworkManager.pingMs.text = $"Ping: {NetworkManager.elapsedMsTime.ElapsedMilliseconds}ms";
         ClientTCP.PACKAGE_PingToServer();
-
     }
 
     private static void HandleRequestGuid(ByteBuffer data)
@@ -149,13 +146,6 @@ public class ClientHandleData
         player.GetComponent<Player>().Health = health;
         NetPlayer.healthText.text = $"Health: {health}";
 
-        int playerAmount = data.ReadInteger();
-        for (int i = 0; i < playerAmount; i++)
-        {
-            string name = data.ReadString();
-            int kills = data.ReadInteger();
-            NetPlayer.instance.highscore[i].text = $"{i + 1}. {name} | {kills}";
-        }
     }
     private static void HandleHighscore(ByteBuffer data)
     {
@@ -166,9 +156,13 @@ public class ClientHandleData
             int kills = data.ReadInteger();
             NetPlayer.instance.highscore[i].text = $"{i + 1}. {name} | {kills}";
         }
-        for (int i = playerAmount + 1; i < NetPlayer.instance.highscore.Length; i++)
+
+        if (playerAmount < NetPlayer.instance.highscore.Length)
         {
-            NetPlayer.instance.highscore[i].text = String.Empty;
+            for (int i = playerAmount + 1; i < NetPlayer.instance.highscore.Length; i++)
+            {
+                NetPlayer.instance.highscore[i].text = String.Empty;
+            }
         }
     }
 }
