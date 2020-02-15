@@ -15,7 +15,7 @@ namespace Unity_Network_Server_SocketCore
 
         private static Socket serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public static Dictionary<Socket, ClientSocket> clients = new Dictionary<Socket, ClientSocket>();
-        public static Player[] highscorePlayers = new Player[5];
+
         private static int port = 7171;
 
         public static void InitTCP()
@@ -48,7 +48,6 @@ namespace Unity_Network_Server_SocketCore
         {
             if (dataBuffer.Length() > 0)
             {
-
                 if (clients[socket].socket.Connected)
                 {
                     byte[] data = dataBuffer.ToArray();
@@ -77,46 +76,83 @@ namespace Unity_Network_Server_SocketCore
             }
         }
 
-        public static void SendDataToAll(ByteBuffer dataBuffer)
+        public static /*async Task*/ void SendDataToAll(ByteBuffer dataBuffer)
         {
-            foreach (var client in clients)
+            foreach (ClientSocket client in clients.Values)
             {
-                SendDataTo(client.Key, dataBuffer, true);
+                SendDataTo(client.socket, dataBuffer, true);
+                //await Task.Delay(1);
             }
+
+            //for (int i = 0; i < clients.Count; i++)
+            //{
+            //    SendDataTo(clients.ElementAt(i).Key, dataBuffer, true);
+            //    //await Task.Delay(1);
+            //}
+
             dataBuffer.Dispose();
         }
-        public static void SendDataToAll(Socket ignoreThisSocket, ByteBuffer dataBuffer)
+        public static /*async Task*/ void SendDataToAll(Socket ignoreThisSocket, ByteBuffer dataBuffer)
         {
-            foreach (var client in clients)
+            foreach (ClientSocket client in clients.Values)
             {
-                if (client.Key != ignoreThisSocket)
+                if (client.socket != ignoreThisSocket)
                 {
-                    SendDataTo(client.Key, dataBuffer, true);
+                    SendDataTo(client.socket, dataBuffer, true);
+                    //await Task.Delay(1);
                 }
             }
+
+            //for (int i = 0; i < clients.Count; i++)
+            //{
+            //    if (clients.ElementAt(i).Key != ignoreThisSocket)
+            //    {
+            //        SendDataTo(clients.ElementAt(i).Key, dataBuffer, true);
+            //        //await Task.Delay(1);
+            //    }
+            //}
+
             dataBuffer.Dispose();
         }
         public static Socket GetSocketByGuid(Guid id)
         {
-            foreach (var client in clients)
+            foreach (ClientSocket client in clients.Values)
             {
-                if (client.Value.id == id)
+                if (client.id == id)
                 {
-                    return client.Key;
+                    return client.socket;
                 }
             }
+
+            //for (int i = 0; i < clients.Count; i++)
+            //{
+            //    if (clients.ElementAt(i).Value.id == id)
+            //    {
+            //        return clients.ElementAt(i).Key;
+            //    }
+            //}
+
             return null;
         }
 
         public static Guid GetGuidBySocket(Socket socket)
         {
-            foreach (var client in clients)
+            foreach (ClientSocket client in clients.Values)
             {
-                if (client.Key == socket)
+                if (client.socket == socket)
                 {
-                    return client.Value.id;
+                    return client.id;
                 }
             }
+
+            //for (int i = 0; i < clients.Count; i++)
+            //{
+            //    if (clients.ElementAt(i).Key == socket)
+            //    {
+            //        return clients.ElementAt(i).Value.id;
+            //    }
+            //}
+
             return Guid.Empty;
         }
 
@@ -157,16 +193,14 @@ namespace Unity_Network_Server_SocketCore
             SendDataToAll(buffer);
         }
 
-        public static void PACKET_SendPlayerMovement(Socket socket, float posX, float posY, float rotation)
+        public static void PACKET_SendPlayerRotation(Socket socket, float rotation)
         {
             ByteBuffer buffer = new ByteBuffer();
-            buffer.Write((int)ServerPackages.Server_SendPlayerMovement);
+            buffer.Write((int)ServerPackages.Server_SendPlayerRotation);
 
             buffer.Write(clients[socket].id.ToByteArray().Length);
             buffer.Write(clients[socket].id.ToByteArray());
 
-            buffer.Write(posX);
-            buffer.Write(posY);
             buffer.Write(rotation);
 
             SendDataToAll(socket, buffer);
@@ -181,7 +215,7 @@ namespace Unity_Network_Server_SocketCore
 
             SendDataToAll(socket, buffer);
         }
-        public static void PACKET_ProjectileToClient(Socket socket, Guid bulletID)
+        public static void PACKET_ProjectileToClient(Socket socket, Guid bulletID, float rotation)
         {
             ByteBuffer buffer = new ByteBuffer();
             buffer.Write((int)ServerPackages.Server_SendNewProjectile);
@@ -190,6 +224,7 @@ namespace Unity_Network_Server_SocketCore
             buffer.Write(clients[socket].id.ToByteArray());
             buffer.Write(bulletID.ToByteArray().Length);
             buffer.Write(bulletID.ToByteArray());
+            buffer.Write(rotation);
 
             SendDataToAll(socket, buffer);
         }
@@ -230,20 +265,21 @@ namespace Unity_Network_Server_SocketCore
             buffer.Write((int)ServerPackages.Server_SendHighscore);
 
             int playerAmount = 0;
-            foreach (var client in clients)
+            Player[] highscorePlayers = new Player[5];
+            for (int i = 0; i < clients.Count; i++)
             {
-                Player player = client.Value.player;
-                for (int i = 0; i < highscorePlayers.Length; i++)
+                Player player = clients.ElementAt(i).Value.player;
+                for (int j = 0; j < highscorePlayers.Length; j++)
                 {
-                    if (highscorePlayers[i] != null)
+                    if (highscorePlayers[j] != null)
                     {
-                        if (player.Kills > highscorePlayers[i].Kills)
+                        if (player.Kills > highscorePlayers[j].Kills && !highscorePlayers.Contains(player))
                         {
-                            Player tempPlayer = highscorePlayers[i];
-                            highscorePlayers[i] = player;
-                            if (i < highscorePlayers.Length - 1)
+                            Player tempPlayer = highscorePlayers[j];
+                            highscorePlayers[j] = player;
+                            if (j < highscorePlayers.Length - 1)
                             {
-                                highscorePlayers[i + 1] = tempPlayer;
+                                highscorePlayers[j + 1] = tempPlayer;
                             }
                             playerAmount++;
                         }
@@ -252,7 +288,7 @@ namespace Unity_Network_Server_SocketCore
                     {
                         if (!highscorePlayers.Contains(player))
                         {
-                            highscorePlayers[i] = player;
+                            highscorePlayers[j] = player;
                             playerAmount++;
                         }
                     }
@@ -266,7 +302,6 @@ namespace Unity_Network_Server_SocketCore
             buffer.Write(playerAmount);
             for (int i = 0; i < playerAmount; i++)
             {
-                Console.WriteLine(i);
                 if (highscorePlayers[i] != null)
                 {
                     Player player = highscorePlayers[i];
@@ -276,5 +311,22 @@ namespace Unity_Network_Server_SocketCore
             }
             SendDataToAll(buffer);
         }
+
+        public static void PACKET_SendPlayerNewMovement(Socket socket, float posX, float posY, float rotation, float thrust)
+        {
+            ByteBuffer buffer = new ByteBuffer();
+            buffer.Write((int)ServerPackages.Server_SendPlayerNewMovement);
+
+            buffer.Write(clients[socket].id.ToByteArray().Length);
+            buffer.Write(clients[socket].id.ToByteArray());
+
+            buffer.Write(posX);
+            buffer.Write(posY);
+            buffer.Write(rotation);
+            buffer.Write(thrust);
+
+            SendDataToAll(socket, buffer);
+        }
+
     }
 }

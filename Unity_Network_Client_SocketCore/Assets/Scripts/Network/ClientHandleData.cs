@@ -13,12 +13,13 @@ public class ClientHandleData
         packetList.Add((int)ServerPackages.Server_PingClient, HandlePingFromServer);
         packetList.Add((int)ServerPackages.Server_SendGuid, HandleRequestGuid);
         packetList.Add((int)ServerPackages.Server_SendNewPlayerToWorld, HandleNewPlayerToWorld);
-        packetList.Add((int)ServerPackages.Server_SendPlayerMovement, HandlePlayerMovement);
+        packetList.Add((int)ServerPackages.Server_SendPlayerRotation, HandlePlayerRotation);
         packetList.Add((int)ServerPackages.Server_SendRemovePlayer, HandleRemovePlayer);
         packetList.Add((int)ServerPackages.Server_SendNewProjectile, HandleNewProjectile);
         packetList.Add((int)ServerPackages.Server_SendPlayerHealth, HandlePlayerHealth);
         packetList.Add((int)ServerPackages.Server_SendPlayerDied, HandlePlayerDeath);
         packetList.Add((int)ServerPackages.Server_SendHighscore, HandleHighscore);
+        packetList.Add((int)ServerPackages.Server_SendPlayerNewMovement, HandlePlayerNewMovement);
     }
     public static void HandleData(byte[] data)
     {
@@ -32,18 +33,25 @@ public class ClientHandleData
             packet.Invoke(buffer);
         }
         buffer.Dispose();
+        //DisplayPing();
     }
-    private static void HandlePingFromServer(ByteBuffer data)
+
+    private static void DisplayPing()
     {
         NetworkManager.elapsedMsTime.Stop();
 
-        if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 150) { NetworkManager.pingMs.color = Color.red; }
-        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds >= 75) { NetworkManager.pingMs.color = new Color32(255, 100, 0, 255); }   // Orange Color
-        else if (NetworkManager.elapsedMsTime.ElapsedMilliseconds > 20) { NetworkManager.pingMs.color = Color.yellow; }
+        long ping = NetworkManager.elapsedMsTime.ElapsedMilliseconds;
+        if (ping >= 150) { NetworkManager.pingMs.color = Color.red; }
+        else if (ping >= 75) { NetworkManager.pingMs.color = new Color32(255, 100, 0, 255); }   // Orange Color
+        else if (ping > 20) { NetworkManager.pingMs.color = Color.yellow; }
         else { NetworkManager.pingMs.color = Color.green; }
 
-        NetworkManager.pingMs.text = $"Ping: {NetworkManager.elapsedMsTime.ElapsedMilliseconds}ms";
-        ClientTCP.PACKAGE_PingToServer();
+        NetworkManager.pingMs.text = $"Ping: {ping}ms";
+    }
+    private static void HandlePingFromServer(ByteBuffer data)
+    {
+        DisplayPing();
+        //ClientTCP.PACKAGE_PingToServer();
     }
 
     private static void HandleRequestGuid(ByteBuffer data)
@@ -70,7 +78,7 @@ public class ClientHandleData
         NetPlayer.InstantiateNewPlayer(id, spriteID, name, x, y, rotation);
     }
 
-    private static void HandlePlayerMovement(ByteBuffer data)
+    private static void HandlePlayerRotation(ByteBuffer data)
     {
         int length = data.ReadInteger();
         byte[] guidBytes = data.ReadBytes(length);
@@ -80,14 +88,10 @@ public class ClientHandleData
             ClientTCP.PACKAGE_RequestWorldPlayer(id);
             return;
         }
-        float posX = data.ReadFloat();
-        float posY = data.ReadFloat();
         float rotation = data.ReadFloat();
 
-
-
-        NetPlayer.players[id].transform.position = new Vector3(posX, posY, 0);
-        NetPlayer.players[id].transform.rotation = Quaternion.Euler(0, 0, rotation);
+        GameObject player = NetPlayer.players[id];
+        player.transform.rotation = Quaternion.Euler(0, 0, rotation);
     }
 
     private static void HandleRemovePlayer(ByteBuffer data)
@@ -109,6 +113,9 @@ public class ClientHandleData
         int bulletLength = data.ReadInteger();
         byte[] bulletGuidBytes = data.ReadBytes(bulletLength);
         Guid bulletID = new Guid(bulletGuidBytes);
+
+        float rotation = data.ReadFloat();
+        NetPlayer.players[id].transform.rotation = Quaternion.Euler(0, 0, rotation);
 
         NetPlayer.InstantiateNewProjectile(id, bulletID);
     }
@@ -164,5 +171,28 @@ public class ClientHandleData
                 NetPlayer.instance.highscore[i].text = String.Empty;
             }
         }
+    }
+
+    private static void HandlePlayerNewMovement(ByteBuffer data)
+    {
+        int length = data.ReadInteger();
+        byte[] guidBytes = data.ReadBytes(length);
+        Guid id = new Guid(guidBytes);
+        if (!NetPlayer.players.ContainsKey(id))
+        {
+            ClientTCP.PACKAGE_RequestWorldPlayer(id);
+            return;
+        }
+        float posX = data.ReadFloat();
+        float posY = data.ReadFloat();
+        float rotation = data.ReadFloat();
+        float thrust = data.ReadFloat();
+
+        GameObject player = NetPlayer.players[id];
+        Player playerData = player.GetComponent<Player>();
+        player.transform.position = new Vector3(posX, posY, 0);
+        player.transform.rotation = Quaternion.Euler(0, 0, rotation);
+        playerData.rb.velocity = Vector3.ClampMagnitude(playerData.rb.velocity, 5f);
+        playerData.rb.AddForce(player.transform.up * thrust);
     }
 }

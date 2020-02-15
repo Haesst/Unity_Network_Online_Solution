@@ -15,6 +15,8 @@ public class Player : MonoBehaviour
     private float rotation;
     private int kills;
 
+    public Rigidbody2D rb;
+
     public Player(Guid id)
     {
         Id = id;
@@ -29,6 +31,7 @@ public class Player : MonoBehaviour
     private void Awake()
     {
         instance = this;
+        rb = GetComponent<Rigidbody2D>();
         //Health = 100;
     }
     private void OnTriggerEnter2D(Collider2D collision)

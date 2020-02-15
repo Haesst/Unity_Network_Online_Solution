@@ -4,12 +4,13 @@ public enum ServerPackages
     Server_PingClient = 1,
     Server_SendGuid,
     Server_SendNewPlayerToWorld,
-    Server_SendPlayerMovement,
+    Server_SendPlayerRotation,
     Server_SendRemovePlayer,
     Server_SendNewProjectile,
     Server_SendPlayerHealth,
     Server_SendPlayerDied,
     Server_SendHighscore,
+    Server_SendPlayerNewMovement,
 
 }
 
@@ -20,8 +21,9 @@ public enum ClientPackages
     Client_RequestGuid,
     Client_SendPlayerData,
     Client_RequestWorldPlayer,
-    Client_SendMovement,
+    Client_SendPlayerRotation,
     Client_SendProjectile,
     Client_SendProjectileHit,
     Client_SendPlayerGotHit,
+    Client_SendNewMovement
 }

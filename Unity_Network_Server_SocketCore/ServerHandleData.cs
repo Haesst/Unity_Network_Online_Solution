@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 
 namespace Unity_Network_Server_SocketCore
@@ -18,10 +17,11 @@ namespace Unity_Network_Server_SocketCore
             packetList.Add((int)ClientPackages.Client_RequestGuid, HandleRequestGuid);
             packetList.Add((int)ClientPackages.Client_SendPlayerData, HandlePlayerData);
             packetList.Add((int)ClientPackages.Client_RequestWorldPlayer, HandleRequestWorldPlayer);
-            packetList.Add((int)ClientPackages.Client_SendMovement, HandleClientMovement);
+            packetList.Add((int)ClientPackages.Client_SendPlayerRotation, HandlePlayerRotation);
             packetList.Add((int)ClientPackages.Client_SendProjectile, HandleNewProjectile);
             packetList.Add((int)ClientPackages.Client_SendProjectileHit, HandleProjectileHit);
             packetList.Add((int)ClientPackages.Client_SendPlayerGotHit, HandlePlayerGotHit);
+            packetList.Add((int)ClientPackages.Client_SendNewMovement, HandleNewMovement);
         }
 
         public static void HandleData(Socket socket, byte[] data)
@@ -35,6 +35,7 @@ namespace Unity_Network_Server_SocketCore
                 packet.Invoke(socket, buffer);
             }
             buffer.Dispose();
+
         }
 
         private static void HandlePingFromClient(Socket socket, ByteBuffer data)
@@ -68,6 +69,7 @@ namespace Unity_Network_Server_SocketCore
             ServerTCP.PACKET_SendNewPlayerToWorld(socket);
             Console.WriteLine($"Player: '{name}' | '{player.Id}' joined the game.");
             ServerTCP.PACKET_SendPlayerHealth(socket, player.Health);
+            ServerTCP.PACKET_SendHighscore();
         }
 
         private static void HandleRequestWorldPlayer(Socket socket, ByteBuffer data)
@@ -79,17 +81,16 @@ namespace Unity_Network_Server_SocketCore
             ServerTCP.PACKET_SendNewPlayerToWorld(ServerTCP.GetSocketByGuid(id));
         }
 
-        private static void HandleClientMovement(Socket socket, ByteBuffer data)
+        private static void HandlePlayerRotation(Socket socket, ByteBuffer data)
         {
-            float x = data.ReadFloat();
-            float y = data.ReadFloat();
             float rotation = data.ReadFloat();
 
             // Set player position on server side 
-            ServerTCP.clients[socket].player.SetPlayerPosition(x, y, rotation);
+            Player player = ServerTCP.clients[socket].player;
+            player.SetPlayerPosition(player.PosX, player.PosY, rotation);
 
-            // Send player position to all clients
-            ServerTCP.PACKET_SendPlayerMovement(socket, x, y, rotation);
+            // Send player rotation to all clients
+            ServerTCP.PACKET_SendPlayerRotation(socket, rotation);
         }
 
         private static void HandleNewProjectile(Socket socket, ByteBuffer data)
@@ -97,8 +98,9 @@ namespace Unity_Network_Server_SocketCore
             int length = data.ReadInteger();
             byte[] guidBytes = data.ReadBytes(length);
             Guid bulletID = new Guid(guidBytes);
+            float rotation = data.ReadFloat();
 
-            ServerTCP.PACKET_ProjectileToClient(socket, bulletID);
+            ServerTCP.PACKET_ProjectileToClient(socket, bulletID, rotation);
         }
 
         private static void HandleProjectileHit(Socket socket, ByteBuffer data)
@@ -151,6 +153,21 @@ namespace Unity_Network_Server_SocketCore
                     ServerTCP.PACKET_SendPlayerDied(socket, player);
                 }
             }
+        }
+
+        private static void HandleNewMovement(Socket socket, ByteBuffer data)
+        {
+            float x = data.ReadFloat();
+            float y = data.ReadFloat();
+            float rotation = data.ReadFloat();
+            float thrust = data.ReadFloat();
+
+            // Set player position on server side 
+            ServerTCP.clients[socket].player.SetPlayerPosition(x, y, rotation);
+
+            // Send player position to all clients
+            //ServerTCP.PACKET_SendPlayerMovement(socket, x, y, rotation);
+            ServerTCP.PACKET_SendPlayerNewMovement(socket, x, y, rotation, thrust);
         }
     }
 }

@@ -35,6 +35,8 @@ public class ClientTCP
 
     public static void SendData(ByteBuffer data)
     {
+        //NetworkManager.elapsedMsTime.Restart(); // Used to display the ping
+
         socket.Send(data.ToArray());
         data.Dispose();
     }
@@ -85,24 +87,22 @@ public class ClientTCP
         SendData(buffer);
     }
 
-    public static void PACKAGE_SendMovement(float posX, float posY, float rotation)
+    public static void PACKAGE_SendPlayerRotation(float rotation)
     {
         ByteBuffer buffer = new ByteBuffer();
-        buffer.Write((int)ClientPackages.Client_SendMovement);
-
-        buffer.Write(posX);
-        buffer.Write(posY);
+        buffer.Write((int)ClientPackages.Client_SendPlayerRotation);
         buffer.Write(rotation);
 
         SendData(buffer);
     }
 
-    public static void PACKAGE_SendProjectile(Guid bulletID)
+    public static void PACKAGE_SendProjectile(Guid bulletID, float roatation)
     {
         ByteBuffer buffer = new ByteBuffer();
         buffer.Write((int)ClientPackages.Client_SendProjectile);
         buffer.Write(bulletID.ToByteArray().Length);
         buffer.Write(bulletID.ToByteArray());
+        buffer.Write(roatation);
         SendData(buffer);
     }
     public static void PACKAGE_SendProjectileHit(Guid bulletID, Guid ownerID, Guid playerID)
@@ -128,6 +128,19 @@ public class ClientTCP
         buffer.Write(id.ToByteArray());
         buffer.Write(bulletID.ToByteArray().Length);
         buffer.Write(bulletID.ToByteArray());
+
+        SendData(buffer);
+    }
+
+    public static void PACKAGE_SendNewMovement(UnityEngine.Vector2 position, float rotation, float thrust)
+    {
+        ByteBuffer buffer = new ByteBuffer();
+        buffer.Write((int)ClientPackages.Client_SendNewMovement);
+
+        buffer.Write(position.x);
+        buffer.Write(position.y);
+        buffer.Write(rotation);
+        buffer.Write(thrust);
 
         SendData(buffer);
     }

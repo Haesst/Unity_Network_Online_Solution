@@ -62,15 +62,6 @@ namespace Unity_Network_Server_SocketCore
         {
             if (ServerTCP.clients.ContainsKey(socket))
             {
-                for (int i = 0; i < ServerTCP.highscorePlayers.Length; i++)
-                {
-                    if (ServerTCP.highscorePlayers[i] == player)
-                    {
-                        ServerTCP.highscorePlayers[i] = null;
-                        break;
-                    }
-                }
-                
                 ServerTCP.PACKET_SendRemovePlayer(socket);
                 //for (int i = 0; i < ServerTCP.highscorePlayers.Length; i++)
                 //{

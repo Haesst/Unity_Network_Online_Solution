@@ -29,12 +29,14 @@ public class NetPlayer : MonoBehaviour
     public Text[] highscore = new Text[5];
 
     private float tick;
+    bool syncPosition;
 
     private void Awake()
     {
 
         instance = this;
         mainCamera = Camera.main;
+        tick = 4.0f;
 
         #region Setup highscore
         GameObject scoreboard = GameObject.Find("ScoreBoard");
@@ -83,12 +85,21 @@ public class NetPlayer : MonoBehaviour
         crossair.transform.position = mousePos;
 
         PlayerRadar();
-        if (tick >= Time.deltaTime)
+
+        if (syncPosition == false && tick >= 2f)
+        {
+            float thrust = Input.GetAxis("Fire2") * PlayerInput.instance.shipSpeed * Time.deltaTime;
+            ClientTCP.PACKAGE_SendNewMovement(PlayerInput.instance.transform.position, PlayerInput.instance.transform.rotation.eulerAngles.z, thrust);
+            syncPosition = true;
+        }
+        if (tick >= 4f)
         {
             ClientTCP.PACKAGE_PingToServer();
-            tick -= Time.deltaTime;
+            syncPosition = false;
+            tick -= tick;
         }
         tick += Time.deltaTime;
+
     }
 
     private void PlayerRadar()
@@ -178,6 +189,7 @@ public class NetPlayer : MonoBehaviour
 
         if (Id == id)
         {
+            go.AddComponent<PlayerInput>();
             PlayerInput.instance.id = id;
             ClientTCP.PACKAGE_SendPlayerData(id);
         }
@@ -187,6 +199,7 @@ public class NetPlayer : MonoBehaviour
     {
         Guid bulletID = Guid.NewGuid();
         Transform parent = players[id].transform; // who shot the projectile
+        //ClientTCP.PACKAGE_SendPlayerRotation(parent.rotation.eulerAngles.z);
 
         GameObject bullet = Instantiate(bulletPrefab);
         bullet.name = $"Bullet | {bulletID}";
@@ -198,7 +211,7 @@ public class NetPlayer : MonoBehaviour
         projectileData.parent = parent;
 
         projectiles.Add(bulletID, bullet);
-        ClientTCP.PACKAGE_SendProjectile(bulletID);
+        ClientTCP.PACKAGE_SendProjectile(bulletID, parent.rotation.eulerAngles.z);
     }
 
     public static void InstantiateNewProjectile(Guid id, Guid bulletID)
