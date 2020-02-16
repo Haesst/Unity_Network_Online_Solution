@@ -16,8 +16,9 @@ public class NetPlayer : MonoBehaviour
     public static GameObject bulletPrefab;
     public static GameObject playerPrefab;
     public static GameObject crossair;
+    public static GameObject healthBar;
 
-    public static Text healthText;
+    //public static Text healthText;
 
     private Transform closestEnemy;
     private GameObject enemyPointer;
@@ -28,7 +29,8 @@ public class NetPlayer : MonoBehaviour
 
     public Text[] highscore = new Text[5];
 
-    private float tick;
+    private float currentTick;
+    private float tickTimer = 1.0f;
     bool syncPosition;
 
     private void Awake()
@@ -36,8 +38,8 @@ public class NetPlayer : MonoBehaviour
 
         instance = this;
         mainCamera = Camera.main;
-        tick = 4.0f;
-
+        healthBar = GameObject.Find("HealthBar");
+        healthBar.SetActive(false);
         #region Setup highscore
         GameObject scoreboard = GameObject.Find("ScoreBoard");
         for (int i = 0; i < highscore.Length; i++)
@@ -64,7 +66,7 @@ public class NetPlayer : MonoBehaviour
         #region Setup Prefabs
         bulletPrefab = Resources.Load("Prefabs/Bullet") as GameObject;
         playerPrefab = Resources.Load("Prefabs/Player") as GameObject;
-        healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
+        //healthText = GameObject.Find("Health").GetComponentInChildren<Text>();
         crossair = Instantiate(Resources.Load("Prefabs/Crossair") as GameObject);
         #endregion
 
@@ -86,19 +88,19 @@ public class NetPlayer : MonoBehaviour
 
         PlayerRadar();
 
-        if (syncPosition == false && tick >= 2f)
+        if (syncPosition == false && currentTick >= (tickTimer / 2))
         {
             float thrust = Input.GetAxis("Fire2") * PlayerInput.instance.shipSpeed * Time.deltaTime;
             ClientTCP.PACKAGE_SendNewMovement(PlayerInput.instance.transform.position, PlayerInput.instance.transform.rotation.eulerAngles.z, thrust);
             syncPosition = true;
         }
-        if (tick >= 4f)
+        if (currentTick >= tickTimer)
         {
             ClientTCP.PACKAGE_PingToServer();
             syncPosition = false;
-            tick -= tick;
+            currentTick -= tickTimer;
         }
-        tick += Time.deltaTime;
+        currentTick += Time.deltaTime;
 
     }
 
@@ -192,6 +194,7 @@ public class NetPlayer : MonoBehaviour
             go.AddComponent<PlayerInput>();
             PlayerInput.instance.id = id;
             ClientTCP.PACKAGE_SendPlayerData(id);
+            healthBar.SetActive(true);
         }
     }
 

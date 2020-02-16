@@ -76,12 +76,12 @@ namespace Unity_Network_Server_SocketCore
             }
         }
 
-        public static /*async Task*/ void SendDataToAll(ByteBuffer dataBuffer)
+        public static async Task SendDataToAll(ByteBuffer dataBuffer)
         {
             foreach (ClientSocket client in clients.Values)
             {
                 SendDataTo(client.socket, dataBuffer, true);
-                //await Task.Delay(1);
+                await Task.Delay(10);   // Quick delay each time a package is sent, to make sure no package is missing
             }
 
             //for (int i = 0; i < clients.Count; i++)
@@ -92,14 +92,14 @@ namespace Unity_Network_Server_SocketCore
 
             dataBuffer.Dispose();
         }
-        public static /*async Task*/ void SendDataToAll(Socket ignoreThisSocket, ByteBuffer dataBuffer)
+        public static async Task SendDataToAll(Socket ignoreThisSocket, ByteBuffer dataBuffer)
         {
             foreach (ClientSocket client in clients.Values)
             {
                 if (client.socket != ignoreThisSocket)
                 {
                     SendDataTo(client.socket, dataBuffer, true);
-                    //await Task.Delay(1);
+                    await Task.Delay(10);   // Quick delay each time a package is sent, to make sure no package is missing
                 }
             }
 

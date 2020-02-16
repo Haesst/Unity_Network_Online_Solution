@@ -38,10 +38,8 @@ public class PlayerInput : MonoBehaviour
             PlayerThrust();
         }
 
-        if ((transform.position != lastPosition) || (transform.rotation != lastRotation))
+        if ((transform.position != lastPosition))
         {
-            //ClientTCP.PACKAGE_SendMovement(transform.position.x, transform.position.y, transform.rotation.eulerAngles.z);
-            lastRotation = transform.rotation;
             lastPosition = transform.position;
             UpdateCameraPosition();
         }

@@ -132,7 +132,8 @@ public class ClientHandleData
         {
             Player player = NetPlayer.players[id].GetComponent<Player>();
             player.Health = health;
-            NetPlayer.healthText.text = $"Health: {health}";
+            //NetPlayer.healthText.text = $"Health: {health}";
+            NetPlayer.healthBar.GetComponent<HealthBar>().SetSize(health * 0.1f);
         }
     }
 
@@ -151,7 +152,8 @@ public class ClientHandleData
         player.transform.position = new Vector3(posX, posY, player.transform.position.z);
         player.transform.rotation = new Quaternion(0, 0, rotation, 0);
         player.GetComponent<Player>().Health = health;
-        NetPlayer.healthText.text = $"Health: {health}";
+        //NetPlayer.healthText.text = $"Health: {health}";
+        NetPlayer.healthBar.GetComponent<HealthBar>().SetSize(health * 0.1f);
 
     }
     private static void HandleHighscore(ByteBuffer data)
